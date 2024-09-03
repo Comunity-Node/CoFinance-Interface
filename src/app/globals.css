@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Global styles for react-select-like appearance */
+
+.react-select-control {
+  background: rgba(0, 0, 0, 0.7); /* Glossy black */
+  border-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.react-select-menu {
+  background: rgba(0, 0, 0, 0.7); /* Glossy black */
+}
+
+.react-select-option {
+  color: white;
+}
+
+.react-select-option--is-focused {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.react-select-single-value {
+  color: white;
+}
+
+.react-select-input {
+  color: white;
+}
+
+
+.glassy-background {
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+  backdrop-filter: blur(10px); /* Apply a blur effect */
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+  border-radius: 10px; /* Optional: rounded corners */
+  padding: 20px; /* Adjust padding as needed */
+}
+
+.card-container {
+  perspective: 1000px; /* Adjust perspective as needed */
+}
+
+.card {
+  transition: transform 0.5s, box-shadow 0.5s;
+  transform-style: preserve-3d;
+}
+
+.card:hover {
+  transform: rotateY(10deg) rotateX(10deg); /* Adjust rotation for 3D effect */
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); /* Adjust shadow */
+}
+
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

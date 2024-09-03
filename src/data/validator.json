@@ -1,0 +1,70 @@
+{
+  "tokens": [
+    {
+      "name": "oraichain",
+      "operator_address": "oraivaloper1t5p9rmxf9uww02pmt895d6a9ne49gaw4dhwh5p",
+      "moniker": "comunitynode",
+      "chainid": "Oraichain",
+      "rpcUrl": "https://rpc.orai.io",
+      "denom": "orai",
+      "decimals": "6",
+      "fee": "5%",
+      "APR": "23%—27%"
+    },
+    {
+      "name": "swisstronik",
+      "operator_address": "swtrvaloper12tl87x8jkp26d23c2sqxyqm0sja3pywk36q9j2",
+      "moniker": "comunitynode",
+      "chainid": "swisstronik_1291-1",
+      "rpcUrl": "https://rpc.testnet.swisstronik.com",
+      "denom": "aswtr",
+      "decimals": "18",
+      "fee": "5%",
+      "APR": "23%—27%"
+    },
+    {
+      "name": "empeiria testnet",
+      "operator_address": "empevaloper1yhepsl68z9ajex4vkl0dm6ytztk94cg82asmxg",
+      "moniker": "ComunityNode",
+      "chainid": "empe-testnet-2",
+      "rpcUrl": "https://rpc-testnet.empe.io",
+      "denom": "uempe",
+      "decimals": "6",
+      "fee": "5%",
+      "APR": "23%—27%"
+    },  
+    {
+      "name": "Osmosis",
+      "operator_address": "osmovaloper13nhwn8dtu0l0erryhcmwwqxh6m43d02y2xrxhf",
+      "moniker": "chorus-one",
+      "chainid": "osmo-test-5",
+      "rpcUrl": "https://rpc.testnet.osmosis.zone",
+      "denom": "uosmo",
+      "decimals": "6",
+      "fee": "5%",
+      "APR": "23%—27%"
+    },
+    {
+      "name": "planq",
+      "operator_address": "plqvaloper12p9wq6xe0sgksp9pa8pyw2vf6sx3ur5px6txhg",
+      "moniker": "comunitynode",
+      "chainid": "planq_7070-1",
+      "rpcUrl": "https://rpc.planq.network",
+      "denom": "aplanq",
+      "decimals": "18",
+      "fee": "5%",
+      "APR": "23%—27%"
+    },
+    {
+      "name": "crossfinance",
+      "operator_address": "mxvaloper1dd3rfalq6m9q0ay3n4k87w9ep9xrfgzucgql9q",
+      "moniker": "comunitynode",
+      "chainid": "crossfi-evm-testnet-1",
+      "rpcUrl": "https://tendermint-rpc.testnet.ms",
+      "denom": "axfi",
+      "decimals": "18",
+      "fee": "5%",
+      "APR": "23%—27%"
+    }  
+  ]
+}

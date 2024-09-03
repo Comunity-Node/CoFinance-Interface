@@ -1,0 +1,25 @@
+{
+  "projects": [
+    {
+        "name": "Swap",
+        "description": "Experience the future of decentralized trading with Swap. Our platform offers the most secure, efficient, and cost-effective swapping mechanism available. Benefit from low fees and ultra-fast transactions, all while maintaining the highest levels of trust and transparency. Swap leverages cutting-edge technology to ensure that every trade is executed with precision and reliability, providing you with an unparalleled trading experience.",
+        "image": "/component/swap.png",
+        "website": "/swap",
+        "category": "Trade"
+    },
+    {
+        "name": "Staking LP",
+        "description": "Unlock the full potential of your assets with Staking LP. Our innovative incentive pools are designed to maximize your rewards as a liquidity provider. By staking your assets, you not only earn additional reward tokens but also contribute to a robust and dynamic liquidity ecosystem. Staking LP integrates advanced mechanisms to ensure optimal returns, offering a compelling opportunity for those looking to enhance their earnings in the decentralized finance landscape.",
+        "image": "/component/yield.png",
+        "website": "/staking",
+        "category": "Earn"
+    },
+    {
+        "name": "Provide Liquidity",
+        "description": "Step into a new era of financial empowerment with our Provide Liquidity framework. Designed for those who wish to capitalize on the decentralized finance revolution, this platform allows you to contribute liquidity and gain significant rewards in return. By participating in our liquidity pools, you play a vital role in the stability and efficiency of the decentralized ecosystem, while enjoying the financial freedom and benefits that come with it. Explore the future of liquidity provision and discover how it can transform your financial strategy.",
+        "image": "/component/lend.png",
+        "website": "/pools",
+        "category": "Earn"
+    }
+]
+}
