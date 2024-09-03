@@ -173,27 +173,26 @@ function PoolsManager() {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const poolManager = new ethers.Contract(POOL_MANAGER_ADDRESS, POOL_MANAGER_ABI, signer);
-
-      if (action === 'incentivize') {
-        const tx = await poolManager.depositIntoIncentivePool(poolAddress, ethers..parseUnits(amount, 18));
-        await tx.wait();
-        alert('Deposit into incentive pool successful');
-        console.log('Deposit successful');
-      } else if (action === 'updateIncentivization') {
-        const tx = await poolManager.updatePoolIncentivization(poolAddress, rewardToken, isIncentivized);
-        await tx.wait();
-        alert('Pool incentivization updated successfully');
-        console.log('Incentivization updated');
-      } else if (action === 'add') {
-        const tx = await poolManager.addLiquidity(tokenA.value, tokenB.value, ethers..parseUnits(amountA, 18), ethers..parseUnits(amountB, 18));
-        await tx.wait();
-        alert('Liquidity added successfully');
-        console.log('Liquidity added');
-      } else if (action === 'withdraw') {
-        const tx = await poolManager.withdrawLiquidity(tokenA.value, tokenB.value, ethers..parseUnits(amountA, 18), ethers..parseUnits(amountB, 18));
-        await tx.wait();
-        alert('Liquidity withdrawn successfully');
-        console.log('Liquidity withdrawn');
+        if (action === 'incentivize') {
+          const tx = await poolManager.depositIntoIncentivePool(poolAddress, ethers..parseUnits(amount, 18));
+          await tx.wait();
+          alert('Deposit into incentive pool successful');
+          console.log('Deposit successful');
+        } else if (action === 'updateIncentivization') {
+          const tx = await poolManager.updatePoolIncentivization(poolAddress, rewardToken, isIncentivized);
+          await tx.wait();
+          alert('Pool incentivization updated successfully');
+          console.log('Incentivization updated');
+        } else if (action === 'add') {
+          const tx = await poolManager.addLiquidity(tokenA.value, tokenB.value, ethers..parseUnits(amountA, 18), ethers..parseUnits(amountB, 18));
+          await tx.wait();
+          alert('Liquidity added successfully');
+          console.log('Liquidity added');
+        } else if (action === 'withdraw') {
+          const tx = await poolManager.withdrawLiquidity(tokenA.value, tokenB.value, ethers..parseUnits(amountA, 18), ethers..parseUnits(amountB, 18));
+          await tx.wait();
+          alert('Liquidity withdrawn successfully');
+          console.log('Liquidity withdrawn');
       }
 
     } catch (error) {
