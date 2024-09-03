@@ -170,7 +170,7 @@ function PoolsManager() {
 
     try {
       // Initialize ethers provider and contract
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = provider.getSigner();
       const poolManager = new ethers.Contract(POOL_MANAGER_ADDRESS, POOL_MANAGER_ABI, signer);
         if (action === 'incentivize') {
