@@ -4,6 +4,7 @@ import Select, { components } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import tokens from '../../data/token.json';
 import { Button } from '../../components/ui/moving-border';
+import { getTokenInfo } from '../../utils/TokenUtils';
 import { createPool } from '../../utils/Factory'; 
 
 import { ethers } from 'ethers';
@@ -52,7 +53,7 @@ const customStyles = {
 const CustomOption = (props) => (
   <components.Option {...props}>
     <div className="flex items-center">
-      <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2" />
+      <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2 rounded-full" />
       {props.data.label}
     </div>
   </components.Option>
@@ -61,43 +62,16 @@ const CustomOption = (props) => (
 const CustomSingleValue = (props) => (
   <components.SingleValue {...props}>
     <div className="flex items-center">
-      <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2" />
+      <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2 rounded-full" />
       {props.data.label}
     </div>
   </components.SingleValue>
 );
 
-const getTokenInfo = async (provider, address) => {
-  try {
-    const tokenContract = new ethers.Contract(address, [
-      "function name() view returns (string)",
-      "function symbol() view returns (string)",
-      "function decimals() view returns (uint8)"
-    ], provider);
-
-    const [name, symbol, decimals] = await Promise.all([
-      tokenContract.name(),
-      tokenContract.symbol(),
-      tokenContract.decimals()
-    ]);
-
-    return {
-      value: address,
-      label: `${name} (${symbol})`,
-      image: `https://cryptologos.cc/logos/${symbol.toLowerCase()}-${decimals}-logo.png`
-    };
-  } catch (error) {
-    console.error('Error fetching token info:', error);
-    return null;
-  }
-};
-
 
 function AddPool() {
   const [tokenA, setTokenA] = useState<{ value: string; label: string; image: string } | null>(null);
   const [tokenB, setTokenB] = useState<{ value: string; label: string; image: string } | null>(null);
-  const [amountA, setAmountA] = useState('');
-  const [amountB, setAmountB] = useState('');
   const [poolName, setPoolName] = useState('');
   const [priceFeed, setPriceFeed] = useState('');
   const [rewardToken, setRewardToken] = useState('');
