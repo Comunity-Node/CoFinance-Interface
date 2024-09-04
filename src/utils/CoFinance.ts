@@ -1237,3 +1237,15 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
       throw error;
     }
   };
+
+  export const getTokenAddresses = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ tokenA: string, tokenB: string }> => {
+    try {
+        const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
+        const tokenA = await contract.tokenA();
+        const tokenB = await contract.tokenB();
+        return { tokenA, tokenB };
+    } catch (error) {
+        console.error('Error getting token addresses:', error);
+        throw error;
+    }
+};

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Button } from './ui/moving-border';
 
-const DEFAULT_IMAGE_URL = '/tokens/crossfi.png';
+const DEFAULT_IMAGE_URL = '/tokens/CoFi.png';
 
 interface PoolCardProps {
   pool: {
@@ -11,9 +11,14 @@ interface PoolCardProps {
       totalA: string;
       totalB: string;
     };
-    tokenA?: string;
-    tokenB?: string;
-    imageA?: string;
+    tokenA?: {
+      label: string;
+      image: string;
+    };
+    tokenB?: {
+      label: string;
+      image: string;
+    };
   };
 }
 
@@ -36,16 +41,26 @@ const PoolCard: React.FC<PoolCardProps> = ({ pool }) => {
 
   return (
     <div className="relative bg-gradient-to-r from-gray-800 via-gray-900 to-black p-4 rounded-lg shadow-lg flex items-center">
-      <Image
-        src={pool.imageA || DEFAULT_IMAGE_URL}
-        alt={pool.tokenA || 'Default Token'}
-        width={50}
-        height={50}
-        className="object-cover rounded-full"
-      />
+      <div className="flex items-center">
+        <Image
+          src={pool.tokenA?.image || DEFAULT_IMAGE_URL}
+          alt={pool.tokenA?.label || 'Default Token'}
+          width={50}
+          height={50}
+          className="object-cover rounded-full"
+        />
+        <span className="mx-2 text-white">/</span>
+        <Image
+          src={pool.tokenB?.image || DEFAULT_IMAGE_URL}
+          alt={pool.tokenB?.label || 'Default Token'}
+          width={50}
+          height={50}
+          className="object-cover rounded-full"
+        />
+      </div>
       <div className="flex-grow px-4">
         <h3 className="text-xl font-semibold text-white">
-          {pool.tokenA} / {pool.tokenB}
+          {pool.tokenA?.label || 'Token A'} / {pool.tokenB?.label || 'Token B'}
         </h3>
         {pool.liquidity ? (
           <>
