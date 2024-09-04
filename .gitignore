@@ -3,6 +3,7 @@ node_modules/
 
 # Ignore .next folder (for Next.js projects)
 .next/
+.next/cache
 
 # Ignore .env files
 .env
