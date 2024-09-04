@@ -1119,18 +1119,26 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
     }
   };
   
-  export const swapTokens = async (provider: ethers.BrowserProvider, tokenAddress: string, tokenAmount: string): Promise<void> => {
-    try {
-      const coFinanceAddress = await getAllPools(provider);
-      const signer: Signer = provider.getSigner();
-      const contractWithSigner = new ethers.Contract(coFinanceAddress, COFINANCE_ABI, signer);
-      const tx = await contractWithSigner.swapTokens(tokenAddress, ethers.parseUnits(tokenAmount));
-      await tx.wait();
-      console.log('Tokens swapped:', tokenAddress, tokenAmount);
-    } catch (error) {
-      console.error('Error swapping tokens:', error);
-      throw error;
-    }
+  export const swapTokens = async (
+	provider: ethers.BrowserProvider, // Use Web3Provider
+	poolAddress: string,
+	tokenAddress: string,
+	tokenAmount: string // Amount as a string
+  ): Promise<void> => {
+	try {
+	  const signer: Signer = provider.getSigner();
+	  const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
+  
+	  // Convert amount to BigNumber
+	  const amount = ethers.parseUnits(tokenAmount, 18); // Adjust decimals if needed
+  
+	  const tx = await contractWithSigner.swapTokens(tokenAddress, amount);
+	  await tx.wait();
+	  console.log('Tokens swapped:', tokenAddress, tokenAmount);
+	} catch (error) {
+	  console.error('Error swapping tokens:', error);
+	  throw error;
+	}
   };
   
   export const depositCollateral = async (provider: ethers.BrowserProvider, tokenAddress: string, amount: string): Promise<void> => {
