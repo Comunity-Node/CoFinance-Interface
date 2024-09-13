@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import PoolCard from '../../components/PoolCard';
 import { Button } from '../../components/ui/moving-border';
-import { getAllPools, getIncentivizedPools } from '../../utils/Factory';
+import { getAllPools } from '../../utils/Factory';
 import { getTotalLiquidity, getTokenAddresses } from '../../utils/CoFinance';
 import { getTokenInfo } from '../../utils/TokenUtils';
 import { ethers } from 'ethers';
@@ -20,7 +20,7 @@ function Pools() {
 
         const provider = new ethers.BrowserProvider(window.ethereum);
         const poolAddresses = await getAllPools(provider);
-        const userOwned = await getIncentivizedPools(provider);
+        const userOwned = await getAllPools(provider);
         const poolData = await Promise.all(
           poolAddresses.map(async (address: string) => {
 			    console.log(address);

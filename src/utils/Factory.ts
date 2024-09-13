@@ -441,7 +441,7 @@ const COFINANCE_FACTORY_ABI = [
 	}
 ];
 
-const COFINANCE_FACTORY_ADDRESS = '0x452eC8B87DF30d434c303A06333d6d1e179F189B'; 
+const COFINANCE_FACTORY_ADDRESS = '0xAB83e0b67Dae4a6186b963b3a828c596A3e0E0E0'; 
 
 export const createPool = async (
   provider: ethers.BrowserProvider,
@@ -484,16 +484,6 @@ export const getAllPools = async (provider: ethers.BrowserProvider) => {
     }
   };
   
-export const getIncentivizedPools = async (provider: ethers.BrowserProvider) => {
-    try {
-      const coFinanceFactory = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
-      const incentivizedPools = await coFinanceFactory.getIncentivizedPools();
-      return incentivizedPools;
-    } catch (error) {
-      console.error('Error fetching incentivized pools:', error);
-      throw error;
-    }
-};
 
 export const getPoolByPairs = async (provider: ethers.BrowserProvider, tokenA: string, tokenB: string) => {
     try {

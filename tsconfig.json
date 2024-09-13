@@ -36,8 +36,7 @@
   },
   "include": [
     "src",
-    ".next/types/**/*.ts",
-    "globals.d.ts"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
