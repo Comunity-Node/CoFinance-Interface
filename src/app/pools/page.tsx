@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import PoolCard from '../../components/PoolCard';
 import { Button } from '../../components/ui/moving-border';
-import { getAllPools, getIncentivizedPools } from '../../utils/Factory';
-import { getTotalLiquidity } from '../../utils/CoFinance';
+import { getAllPools } from '../../utils/Factory';
+import { getTotalLiquidity, getTokenAddresses } from '../../utils/CoFinance';
+import { getTokenInfo } from '../../utils/TokenUtils';
 import { ethers } from 'ethers';
 
 function Pools() {
@@ -18,23 +19,36 @@ function Pools() {
         if (!window.ethereum) return;
 
         const provider = new ethers.BrowserProvider(window.ethereum);
-
-        // Fetch all pool addresses
         const poolAddresses = await getAllPools(provider);
-        // Fetch user-owned pools
-        const userOwned = await getIncentivizedPools(provider);
-
-        // Fetch liquidity for each pool individually
+        const userOwned = await getAllPools(provider);
         const poolData = await Promise.all(
           poolAddresses.map(async (address: string) => {
-			console.log(address);
+			    console.log(address);
             try {
+              const { tokenA, tokenB } = await getTokenAddresses(provider, address);
+              const [tokenAInfo, tokenBInfo] = await Promise.all([
+                getTokenInfo(provider, tokenA),
+                getTokenInfo(provider, tokenB)
+              ]);
+              console.log(tokenAInfo);
+              console.log(tokenBInfo)
               const liquidity = await getTotalLiquidity(provider, address);
-			  console.log(liquidity);
-              return { address, liquidity };
-            } catch (error) {
-              console.error(`Error fetching liquidity for pool ${address}:`, error);
-              return { address, liquidity: { totalA: 'N/A', totalB: 'N/A' } }; // Handle error gracefully
+              const scaledTotalA = parseFloat(liquidity.totalA) * Math.pow(10, 20);
+              const scaledTotalB = parseFloat(liquidity.totalB) * Math.pow(10, 20);
+        return {
+          address,
+          liquidity: { totalA: scaledTotalA, totalB: scaledTotalB },
+          tokenA: tokenAInfo,
+          tokenB: tokenBInfo
+        };
+      } catch (error) {
+        console.error(`Error fetching liquidity for pool ${address}:`, error);
+        return {
+          address,
+          liquidity: { totalA: 'N/A', totalB: 'N/A' },
+          tokenA: { value: 'N/A', label: 'N/A', image: '/tokens/default.png' },
+          tokenB: { value: 'N/A', label: 'N/A', image: '/tokens/default.png' }
+        }; // Handle error gracefully
             }
           })
         );

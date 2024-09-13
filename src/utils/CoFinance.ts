@@ -1119,18 +1119,25 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
     }
   };
   
-  export const swapTokens = async (provider: ethers.BrowserProvider, tokenAddress: string, tokenAmount: string): Promise<void> => {
-    try {
-      const coFinanceAddress = await getAllPools(provider);
-      const signer: Signer = provider.getSigner();
-      const contractWithSigner = new ethers.Contract(coFinanceAddress, COFINANCE_ABI, signer);
-      const tx = await contractWithSigner.swapTokens(tokenAddress, ethers.parseUnits(tokenAmount));
-      await tx.wait();
-      console.log('Tokens swapped:', tokenAddress, tokenAmount);
-    } catch (error) {
-      console.error('Error swapping tokens:', error);
-      throw error;
-    }
+  export const swapTokens = async (
+	provider: ethers.BrowserProvider,
+	poolAddress: string,
+	tokenAddress: string,
+	tokenAmount: string // Amount as a string
+  ): Promise<void> => {
+	try {
+	  const signer: Signer = provider.getSigner();
+	  const contractWithSigner = new ethers.Contract("0xc0fC73a294EB0d839261B18EA1e09E59cbd4771F", COFINANCE_ABI, signer);
+	  // Convert tokenAmount to BigNumber with appropriate decimals
+	  const amount = ethers.parseUnits(tokenAmount, 18); // Adjust decimals if needed
+  
+	  const tx = await contractWithSigner.swapTokens("0xc0fC73a294EB0d839261B18EA1e09E59cbd4771F", ethers.parseUnits("100", 18));
+	  await tx.wait();
+	  console.log('Tokens swapped:', tokenAddress, tokenAmount);
+	} catch (error) {
+	  console.error('Error swapping tokens:', error);
+	  throw error;
+	}
   };
   
   export const depositCollateral = async (provider: ethers.BrowserProvider, tokenAddress: string, amount: string): Promise<void> => {
@@ -1237,3 +1244,15 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
       throw error;
     }
   };
+
+  export const getTokenAddresses = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ tokenA: string, tokenB: string }> => {
+    try {
+        const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
+        const tokenA = await contract.tokenA();
+        const tokenB = await contract.tokenB();
+        return { tokenA, tokenB };
+    } catch (error) {
+        console.error('Error getting token addresses:', error);
+        throw error;
+    }
+};

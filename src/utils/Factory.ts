@@ -3,6 +3,55 @@ import { ethers } from 'ethers';
 
 const COFINANCE_FACTORY_ABI = [
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenA",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "tokenB",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "rewardToken",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "priceFeed",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "liquidityTokenName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "liquidityTokenSymbol",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "isPoolIncentivized",
+				"type": "bool"
+			}
+		],
+		"name": "createPool",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
@@ -129,6 +178,45 @@ const COFINANCE_FACTORY_ABI = [
 		"inputs": [
 			{
 				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "receiveFees",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "newFee",
+				"type": "uint256"
+			}
+		],
+		"name": "updateCreationFee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			}
+		],
+		"name": "withdrawFees",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
 			}
@@ -142,55 +230,6 @@ const COFINANCE_FACTORY_ABI = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenA",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "tokenB",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "rewardToken",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "priceFeed",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "liquidityTokenName",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "liquidityTokenSymbol",
-				"type": "string"
-			},
-			{
-				"internalType": "bool",
-				"name": "isPoolIncentivized",
-				"type": "bool"
-			}
-		],
-		"name": "createPool",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "payable",
 		"type": "function"
 	},
 	{
@@ -388,19 +427,6 @@ const COFINANCE_FACTORY_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "receiveFees",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "totalFeesReceived",
 		"outputs": [
@@ -412,36 +438,10 @@ const COFINANCE_FACTORY_ABI = [
 		],
 		"stateMutability": "view",
 		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "newFee",
-				"type": "uint256"
-			}
-		],
-		"name": "updateCreationFee",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "withdrawFees",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	}
 ];
 
-const COFINANCE_FACTORY_ADDRESS = '0x452eC8B87DF30d434c303A06333d6d1e179F189B'; 
+const COFINANCE_FACTORY_ADDRESS = '0xAB83e0b67Dae4a6186b963b3a828c596A3e0E0E0'; 
 
 export const createPool = async (
   provider: ethers.BrowserProvider,
@@ -484,13 +484,17 @@ export const getAllPools = async (provider: ethers.BrowserProvider) => {
     }
   };
   
-export const getIncentivizedPools = async (provider: ethers.BrowserProvider) => {
+
+export const getPoolByPairs = async (provider: ethers.BrowserProvider, tokenA: string, tokenB: string) => {
     try {
-      const coFinanceFactory = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
-      const incentivizedPools = await coFinanceFactory.getIncentivizedPools();
-      return incentivizedPools;
+        const coFinanceFactory = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
+        if (tokenA > tokenB) {
+            [tokenA, tokenB] = [tokenB, tokenA];
+        }
+        const poolAddress = await coFinanceFactory.getPoolByPair(tokenA, tokenB);
+        return poolAddress;
     } catch (error) {
-      console.error('Error fetching incentivized pools:', error);
-      throw error;
+        console.error('Error fetching pool by pair:', error);
+        throw error;
     }
 };
