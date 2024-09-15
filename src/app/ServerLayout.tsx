@@ -17,7 +17,7 @@ const ServerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       <body className={inter.className}>
         <div className="relative w-full flex flex-col min-h-screen">
           <Navbar />
-          <main className="flex-grow pt-20">
+          <main className="flex-grow">
             {children}
           </main>
         </div>

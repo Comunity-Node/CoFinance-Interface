@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '../components/ui/moving-border';
+import { Button, ButtonGlass } from '../components/ui/moving-border';
 import ChainSwitchButton from './SwitchChain'; // Update path as necessary
 import { connectMetaMask } from '../utils/wallet'; // Update path as necessary
+import { FaWallet } from 'react-icons/fa';
 
 interface ConnectButtonProps {
   account: string | null;
@@ -59,16 +60,12 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ account, setAccount }) =>
   };
 
   return (
-    <div
-      className={`fixed top-10 right-4 z-50 transition-transform ${
-        visible ? 'translate-y-0' : '-translate-y-full'
-      }`}
-    >
+    <div className="fixed top-4 right-5 z-50 transition-transform">
       <div className="flex items-center space-x-4">
         <ChainSwitchButton />
-        <Button onClick={connected ? handleDisconnectWallet : handleConnectMetaMask}>
-          {connected ? `${account?.substring(0, 6)}...${account?.substring(account.length - 4)}` : 'Connect Wallet'}
-        </Button>
+        <ButtonGlass onClick={connected ? handleDisconnectWallet : handleConnectMetaMask}>
+          <FaWallet className="mr-2" /> {connected ? `${account?.substring(0, 6)}...${account?.substring(account.length - 4)}` : 'Connect Wallet'}
+        </ButtonGlass>
       </div>
     </div>
   );
