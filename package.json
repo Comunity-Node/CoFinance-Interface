@@ -17,6 +17,7 @@
     "@cosmjs/proto-signing": "^0.32.4",
     "@cosmjs/stargate": "^0.32.4",
     "@formspree/react": "^2.5.1",
+    "@headlessui/react": "^2.1.8",
     "@keplr-wallet/provider": "^0.12.113",
     "@metamask/detect-provider": "^2.0.0",
     "@metamask/sdk": "^0.27.0",
