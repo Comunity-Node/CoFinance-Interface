@@ -1,7 +1,6 @@
 import type { Config } from "tailwindcss";
 
 const svgToDataUri = require("mini-svg-data-uri");
-const colors = require("tailwindcss/colors");
 const {
   default: flattenColorPalette,
 } = require("tailwindcss/lib/util/flattenColorPalette");
@@ -52,26 +51,33 @@ const config: Config = {
     extend: {
       animation: {
         spotlight: "spotlight 2s ease .75s 1 forwards",
-        scroll: "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite"
+        // scroll: "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
+        bannermove: 'bannermove 10s linear infinite',
+      },
+      fontFamily: {
+        rubik: ['Rubik', 'sans-serif'], // Add Rubik font family
       },
       backgroundImage: {
+        'explore': 'url(/explore.svg)',
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        // 'custom-linier-gradient': 'radial-gradient(100% 173% at 0 0, rgba(250,178,239,.45) 0%, rgba(235,38,235,.36) 18%, rgba(178,38,155,.16) 40%, rgba(22,15,56,0) 60%), linear-gradient(188deg, #140f34, #140f3400)',
+        'custom-radial-gradient': 'radial-gradient(102.12% 96.05% at 90.28% 96.15%, rgba(25, 42, 86,1.0) 0%, rgba(15,9,45,0) 100%)',
+        'custom-linear-gradient': 'linear-gradient(122.29deg, rgba(0, 0, 0, 1) 0%, rgba(25, 42, 86,1.0) 45.53%, rgba(101, 101, 101, 0) 100%)',
       },
       keyframes: {
         spotlight: {
-          '0%': { opacity: '0', transform: 'translate(-72%, -62%) scale(0.5)' },
-          '100%': { opacity: '1', transform: 'translate(-50%,-40%) scale(1)' },
+          '0%': { opacity: '0', transform: 'translate(-70%, -60%) scale(0.5)' },
+          '100%': { opacity: '1', transform: 'translate(-50%, -10%) scale(1)' },
         },
-        scroll: {
-          to: {
-            transform: "translate(calc(-50% - 0.5rem))",
-          },
-        },
+        bannermove: {
+          '0%': { transform: 'translate(0, 0)' },
+          '100%': { transform: 'translate(-40%, 0)' },
+        }
       }
     },
   },
-  plugins: [addVariablesForColors, addSvgPatterns],
+  plugins: [addVariablesForColors, addSvgPatterns, require('daisyui'),],
 };
 export default config;

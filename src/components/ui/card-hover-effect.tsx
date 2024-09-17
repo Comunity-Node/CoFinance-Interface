@@ -11,15 +11,16 @@ export const HoverEffect = ({
         title: string;
         description: string;
         link: string;
+        img: string;
     }[];
     className?: string;
 }) => {
-    let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
     return (
         <div
             className={cn(
-                "grid grid-cols-1 md:grid-cols-2  lg:grid-cols-3  py-10",
+                "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 py-10",
                 className
             )}
         >
@@ -27,14 +28,14 @@ export const HoverEffect = ({
                 <Link
                     href={item?.link}
                     key={item?.link}
-                    className="relative group  block p-2 h-full w-full"
+                    className="relative group block p-2 h-full w-full"
                     onMouseEnter={() => setHoveredIndex(idx)}
                     onMouseLeave={() => setHoveredIndex(null)}
                 >
                     <AnimatePresence>
                         {hoveredIndex === idx && (
                             <motion.span
-                                className="absolute inset-0 h-full w-full bg-neutral-200 dark:bg-slate-800/[0.8] block  rounded-3xl"
+                                className="absolute inset-0 h-full w-full bg-neutral-200 dark:bg-slate-800/[0.8] block rounded-3xl"
                                 layoutId="hoverBackground"
                                 initial={{ opacity: 0 }}
                                 animate={{
@@ -48,9 +49,9 @@ export const HoverEffect = ({
                             />
                         )}
                     </AnimatePresence>
-                    <Card>
-                        <CardTitle>{item.title}</CardTitle>
-                        <CardDescription>{item.description}</CardDescription>
+                    <Card isHovered={hoveredIndex === idx}>
+                        <CardTitle img={item.img}>{item.title}</CardTitle>
+                        {hoveredIndex === idx && <CardDescription>{item.description}</CardDescription>}
                     </Card>
                 </Link>
             ))}
@@ -58,18 +59,21 @@ export const HoverEffect = ({
     );
 };
 
-export const Card = ({
+const Card = ({
     className,
     children,
+    isHovered,
 }: {
     className?: string;
     children: React.ReactNode;
+    isHovered?: boolean;
 }) => {
     return (
         <div
             className={cn(
                 "rounded-2xl h-full w-full p-4 overflow-hidden bg-black border border-transparent dark:border-white/[0.2] group-hover:border-slate-700 relative z-20",
-                className
+                className,
+                { 'bg-custom-linear-gradient': isHovered }
             )}
         >
             <div className="relative z-50">
@@ -78,20 +82,33 @@ export const Card = ({
         </div>
     );
 };
-export const CardTitle = ({
+
+const CardTitle = ({
     className,
     children,
+    img,
 }: {
     className?: string;
     children: React.ReactNode;
+    img: string;
 }) => {
     return (
-        <h4 className={cn("text-zinc-100 font-bold tracking-wide mt-4", className)}>
-            {children}
-        </h4>
+        <div className="flex items-center">
+            <img
+                src={img}
+                alt="Card Image"
+                width={50}
+                height={50}
+                className="w-12 h-12 object-cover rounded-full mr-4"
+            />
+            <h4 className={cn("text-zinc-100 font-bold tracking-wide", className)}>
+                {children}
+            </h4>
+        </div>
     );
 };
-export const CardDescription = ({
+
+const CardDescription = ({
     className,
     children,
 }: {
@@ -101,7 +118,7 @@ export const CardDescription = ({
     return (
         <p
             className={cn(
-                "mt-8 text-zinc-400 tracking-wide leading-relaxed text-sm",
+                "mt-4 text-zinc-400 tracking-wide leading-relaxed text-sm transition-opacity duration-300",
                 className
             )}
         >

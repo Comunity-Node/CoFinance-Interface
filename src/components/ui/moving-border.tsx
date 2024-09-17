@@ -92,7 +92,7 @@ export function Button({
     return (
         <button
             className={cn(
-                "bg-transparent relative text-xl h-16 w-40 p-[1px] overflow-hidden",
+                "bg-transparent relative text-xl h-12 w-40 p-[1px] overflow-hidden",
                 containerClassName
             )}
             style={{ borderRadius }}
@@ -114,7 +114,52 @@ export function Button({
 
             <div
                 className={cn(
-                    "relative bg-slate-900/[0.8] border border-slate-800 backdrop-blur-xl text-white flex items-center justify-center w-full h-full text-sm antialiased",
+                    "relative  border border-slate-800 backdrop-blur-xl text-white flex items-center justify-center w-full h-full text-sm antialiased",
+                    className
+                )}
+                style={{ borderRadius: `calc(${borderRadius} * 0.96)` }}
+            >
+                {children}
+            </div>
+        </button>
+    );
+}
+
+export function ButtonGlass({
+    borderRadius = "1.75rem",
+    children,
+    containerClassName,
+    borderClassName,
+    duration,
+    className,
+    ...otherProps
+}: ButtonProps) {
+    return (
+        <button
+            className={cn(
+                "btn glass bg-white relative text-xl h-12 w-40 p-[1px] overflow-hidden",
+                containerClassName
+            )}
+            style={{ borderRadius }}
+            {...otherProps}
+        >
+            <div
+                className="absolute inset-0"
+                style={{ borderRadius: `calc(${borderRadius} * 0.96)` }}
+            >
+                <MovingBorder duration={duration} rx="30%" ry="30%">
+                    <div
+                        className={cn(
+                            "h-20 w-20 opacity-[0.8] bg-[radial-gradient(var(--sky-500)_40%,transparent_60%)]",
+                            borderClassName
+                        )}
+                    />
+                </MovingBorder>
+            </div>
+
+            <div
+                className={cn(
+                    "relative  border border-slate-800 backdrop-blur-xl text-black hover:text-white flex items-center justify-center w-full h-full text-sm antialiased",
                     className
                 )}
                 style={{ borderRadius: `calc(${borderRadius} * 0.96)` }}
@@ -137,14 +182,14 @@ interface CardProps {
 export const Card = ({
     title,
     content,
-    borderRadius = "1.75rem",
+    borderRadius = "1.75 rem",
     duration = 2000,
     className,
     borderClassName,
 }: CardProps) => {
     return (
         <div
-            className={`relative overflow-hidden bg-black text-white rounded-lg shadow-lg p-6 ${className}`}
+            className={`relative overflow-hidden bg-black text-white rounded-sm shadow-lg p-6 ${className}`}
             style={{ borderRadius }}
         >
             <div
