@@ -256,7 +256,9 @@ function Portofolio() {
         ))}
       </div>
 
-      <Drawer drawerItems={drawerList} />
+      <div className="py-5">
+        <Drawer drawerItems={drawerList} bgCustom='bg-custom-radial-gradient' />
+      </div>
     </section>
   );
 }

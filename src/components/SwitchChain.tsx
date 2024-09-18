@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '../components/ui/moving-border';
 import { switchChain } from '../utils/wallet';
+import { IoIosGitNetwork } from "react-icons/io";
 
 // Define the chain options, including Solana clusters
 const chains = [
@@ -45,8 +46,18 @@ const ChainSwitchButton: React.FC = () => {
         className="mr-2"
         onClick={() => setMenuOpen(prev => !prev)} // Toggle menu visibility
       >
+        {selectedChain ? (
+          <img
+            src={chains.find(chain => chain.value === selectedChain)?.icon}
+            alt={chains.find(chain => chain.value === selectedChain)?.label}
+            style={{ width: '24px', marginRight: '8px' }}
+          />
+        ) : (
+          <IoIosGitNetwork style={{ marginRight: '8px' }} />
+        )}
         {selectedChain ? chains.find(chain => chain.value === selectedChain)?.label : 'Select Chain'}
       </Button>
+
       {menuOpen && (
         <div className="absolute right-0 mt-5 w-auto p-3 text-white border border-gray-900 bg-black shadow-lg shadow-blue-950 rounded-lg">
           {chains.map((chain) => (
