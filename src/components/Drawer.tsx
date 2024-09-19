@@ -7,11 +7,14 @@ interface DrawerItem {
 
 interface DrawerProps {
     drawerItems: DrawerItem[];
-    bgCustom: string;
+    classActiveTab: string;
+    classDeactiveTab: string;
+    classParent: string;
+    title: string;
 }
 
-const Drawer: React.FC<DrawerProps> = ({ drawerItems, bgCustom }) => {
-    const [activeTab, setActiveTab] = useState(0); // Default to the first tab
+const Drawer: React.FC<DrawerProps> = ({ drawerItems, classActiveTab, classDeactiveTab, classParent, title }) => {
+    const [activeTab, setActiveTab] = useState(0); // Default to the first tab,
 
     if (!drawerItems || drawerItems.length === 0) {
         return <div>No content available</div>;
@@ -19,16 +22,17 @@ const Drawer: React.FC<DrawerProps> = ({ drawerItems, bgCustom }) => {
 
     return (
         <div className="drawer lg:drawer-open">
-            <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
+            {/* <input id="my-drawer-2" type="checkbox" className="drawer-toggle" /> */}
             <div className="drawer-content">
-                <div className="flex flex-col h-full w-full ">
+                <div className="flex flex-col h-auto w-full ">
                     {/* Button container */}
-                    <div className="flex overflow-x-auto ">
-                        <ul className="flex space-x-3 py-4">
+                    <div className="flex items-center justify-between overflow-x-auto ">
+                        <p className={`text-xl font-semibold ${title ? 'block' : 'hidden'}`}>{title}</p>
+                        <ul className={`flex space-x-3 ${classParent}`}>
                             {drawerItems.map((item, index) => (
                                 <li key={index} className="flex-none">
                                     <button
-                                        className={`py-2 px-4 rounded-lg text-left ${activeTab === index ? `${bgCustom} text-white` : "bg-transparent border border-gray-800 text-white"}`}
+                                        className={`${activeTab === index ? `${classActiveTab}` : `${classDeactiveTab}`}`}
                                         onClick={() => setActiveTab(index)}
                                         aria-selected={activeTab === index}
                                     >

@@ -11,9 +11,9 @@ const Navbar = () => {
     return (
         <div className="navbar fixed bg-black z-50 shadow-md shadow-gray-700">
             <div className="navbar-start">
-                <a className="btn btn-ghost text-xl">Co-Finance</a>
+                <Link href={"/"} className="btn btn-ghost text-xl">Co-Finance</Link>
             </div>
-            <div className="navbar-center space-x-10">
+            <div className="navbar-center space-x-10 bg-transparent">
                 <Menu setActive={setActive}>
                     <Link href={"/"}>
                         <MenuItem setActive={setActive} active={active} item="Home">

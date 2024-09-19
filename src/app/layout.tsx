@@ -5,7 +5,6 @@ import ServerLayout from './ServerLayout';
 import ClientWrapper from './RootLayout';
 import './globals.css';
 
-
 interface LayoutProps {
   children: React.ReactNode;
   title?: string;

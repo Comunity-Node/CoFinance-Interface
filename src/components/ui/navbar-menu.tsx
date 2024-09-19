@@ -4,6 +4,14 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
+import { Rubik } from 'next/font/google';
+
+// Load Rubik font from Google Fonts
+const rubik = Rubik({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+});
+
 const transition = {
     type: "spring",
     mass: 0.5,
@@ -25,7 +33,7 @@ export const MenuItem = ({
     children?: React.ReactNode;
 }) => {
     return (
-        <div onMouseEnter={() => setActive(item)} className="relative ">
+        <div onMouseEnter={() => setActive(item)} className={rubik.className}>
             <motion.p
                 transition={{ duration: 0.3 }}
                 className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white"
@@ -70,7 +78,7 @@ export const Menu = ({
     return (
         <nav
             onMouseLeave={() => setActive(null)} // resets the state
-            className="relative rounded-full boder border-transparent dark:bg-black dark:border-white/[0.2] bg-white shadow-input flex justify-center space-x-10 px-8 py-6 "
+            className="relative rounded-full font-semibold text-white boder border-transparent dark:bg-black dark:border-white/[0.2] bg-black shadow-input flex justify-center space-x-10 px-8 py-6 "
         >
             {children}
         </nav>
