@@ -257,7 +257,7 @@ function Portofolio() {
       </div>
 
       <div className="py-5">
-        <Drawer drawerItems={drawerList} bgCustom='bg-custom-radial-gradient' />
+        <Drawer drawerItems={drawerList} classParent='py-4' title='' classActiveTab='bg-custom-radial-gradient py-2 px-4 rounded-lg text-left text-white' classDeactiveTab='bg-transparent border border-white py-2 px-4 rounded-lg text-left text-white' />
       </div>
     </section>
   );

@@ -2,59 +2,116 @@
 import React, { useState, useEffect } from 'react';
 import Select, { components } from 'react-select';
 import tokens from '../../data/token.json';
-import { Button } from '../../components/ui/moving-border';
+import { Button } from '@/components/ui/moving-border';
+import Drawer from '@/components/Drawer';
+import { FaArrowCircleRight } from 'react-icons/fa';
 
-// Custom styles for react-select
+
+// Custom styles for the select
 const customStyles = {
-  control: (base) => ({
-    ...base,
-    background: 'rgba(0, 0, 0, 0.7)', // Glossy black
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    color: 'white'
+  control: (provided: any) => ({
+    ...provided,
+    backgroundColor: '#111827', // Customize the control background color
+    color: '#fff',
+    border: 'none',
+    borderRadius: '10px',
+    padding: '5px 3px',
+    width: "300px",
   }),
-  menu: (base) => ({
-    ...base,
-    background: 'rgba(0, 0, 0, 0.7)', // Glossy black
+  singleValue: (provided: any) => ({
+    ...provided,
+    color: '#fff',
   }),
-  option: (base, { isFocused }) => ({
-    ...base,
-    background: isFocused ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-    color: 'white',
+  menu: (provided: any) => ({
+    ...provided,
+    backgroundColor: '#1f2937', // Customize the dropdown background color
   }),
-  singleValue: (base) => ({
-    ...base,
-    color: 'white',
+  option: (provided: any, state: { isSelected: any; }) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#374151' : '#1f2937',
+    color: '#fff',
+    '&:hover': {
+      backgroundColor: '#374151',
+    },
+
   }),
-  input: (base) => ({
-    ...base,
-    color: 'white',
+  indicatorSeparator: (provided: any) => ({
+    display: 'none',            // Hide the separator (vertical line)
+  }),
+  input: (provided: any) => ({
+    ...provided,
+    color: '#fff',              // Search input text color set to white
   }),
 };
 
-// Custom Option component to display image in the select dropdown
-const CustomOption = (props) => {
+// Custom styles for the select
+const customStyles2 = {
+  control: (provided: any) => ({
+    ...provided,
+    backgroundColor: '#111827', // Customize the control background color
+    color: '#fff',
+    border: 'none',
+    borderRadius: '10px',
+    padding: '5px',
+    width: "100%",
+  }),
+  singleValue: (provided: any) => ({
+    ...provided,
+    color: '#fff',
+  }),
+  menu: (provided: any) => ({
+    ...provided,
+    backgroundColor: '#1f2937', // Customize the dropdown background color
+  }),
+  option: (provided: any, state: { isSelected: any; }) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? '#374151' : '#1f2937',
+    color: '#fff',
+    '&:hover': {
+      backgroundColor: '#374151',
+    },
+  }),
+  indicatorSeparator: (provided: any) => ({
+    display: 'none',            // Hide the separator (vertical line)
+  }),
+  input: (provided: any) => ({
+    ...provided,
+    color: '#fff',              // Search input text color set to white
+  }),
+};
+
+
+// Custom Option component to display images and text
+const CustomOption = (props: any) => {
   return (
     <components.Option {...props}>
       <div className="flex items-center">
-        <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2" />
+        <img
+          src={props.data.image}
+          alt={props.data.label}
+          className="w-6 h-6 rounded-full mr-3"
+        />
         {props.data.label}
       </div>
     </components.Option>
   );
 };
 
-// Custom SingleValue component to display image in the selected value
-const CustomSingleValue = (props) => {
+// Custom SingleValue component to display selected option with image
+const CustomSingleValue = (props: any) => {
   return (
     <components.SingleValue {...props}>
       <div className="flex items-center">
-        <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2" />
+        <img
+          src={props.data.image}
+          alt={props.data.label}
+          className="w-6 h-6 rounded-full mr-3"
+        />
         {props.data.label}
       </div>
     </components.SingleValue>
   );
 };
-
 // Define the borrowing duration options
 const borrowingDurations = [
   { value: 10, label: '30 Days' },
@@ -109,124 +166,141 @@ function Borrow() {
     calculateInterestRate(); // Recalculate on token or duration change
   }, [selectedToken, borrowingDuration]);
 
+  const handleDepositCollateralChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDepositCollateral(e.target.value);
+    // You may update collateralAmount or other states if needed
+  };
+
+  const handleKeyUp = () => {
+    setCollateralAmount(depositedCollateral.toFixed(2));
+  };
+  const Corrateral = () => (
+    <div className='space-y-4 py-4 h-96'>
+      <div className="flex items-center justify-between w-full space-x-2 bg-[#111827] rounded-tl-2xl rounded-tr-2xl px-4 py-2">
+        <Select
+          isSearchable={true}
+          options={tokenOptions}
+          value={selectedDepositToken}
+          onChange={setSelectedDepositToken}
+          styles={customStyles}
+          components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
+          placeholder="Choose Token" />
+        <input
+          type="number"
+          value={depositCollateral}
+          onChange={handleDepositCollateralChange}
+          onKeyUp={handleKeyUp}
+          placeholder="0"
+          className="text-right w-full rounded-xl p-5 text-3xl bg-[#111827] focus:border-0 text-white placeholder:text-gray-600" />
+      </div>
+      <div className="w-full text-end rounded-bl-2xl rounded-br-2xl p-1 bg-gray-500">
+        <button className="btn border-0 bg-transparent hover:bg-transparent text-gray-950  w-full" onClick={handleDepositCollateral}>Deposit <FaArrowCircleRight /></button>
+
+      </div>
+    </div>
+  );
+
+  const BorrowTokens = () => (
+    <div className='space-y-4 py-4 h-96'>
+      <div className="flex items-center justify-between w-full space-x-2 bg-[#111827] rounded-tl-2xl rounded-tr-2xl px-4 py-2">
+        <Select
+          options={tokenOptions}
+          value={selectedToken}
+          onChange={setSelectedToken}
+          styles={customStyles}
+          components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
+          placeholder="Select token"
+        />
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0"
+          className="text-right w-full rounded-xl p-5 text-3xl bg-[#111827] focus:border-0 text-white placeholder:text-gray-600" />
+      </div>
+      <div className='p-1 bg-[#111827] rounded-xl'>
+        <Select
+          options={borrowingDurations}
+          value={borrowingDuration}
+          onChange={setBorrowingDuration}
+          styles={customStyles2}
+          placeholder="Borrowing Duration"
+        />
+      </div>
+      <div className="w-full text-end rounded-bl-2xl rounded-br-2xl p-1 bg-gray-500">
+        <button className="btn border-0 bg-transparent hover:bg-transparent text-gray-950 w-full" onClick={handleBorrow}>Borrow <FaArrowCircleRight /></button>
+      </div>
+    </div>
+  );
+
+  const tabsBorrow = [
+    {
+      label: "Collateral",
+      content: <Corrateral />,
+    },
+    {
+      label: "Borrow",
+      content: <BorrowTokens />,
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-gray-900 via-gray-800 to-black py-12 pt-36">
-      <h1 className="text-lg md:text-7xl text-center font-sans font-bold mb-8 text-white">Borrow Tokens</h1>
-
-      {/* Summary Section */}
-      <div className="flex justify-center mb-12">
-        <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black p-6 rounded-lg shadow-lg w-full max-w-screen-lg flex flex-wrap">
-          <div className="w-full md:w-1/2 p-4">
-            <h2 className="text-lg font-bold mb-4 text-white">Summary</h2>
-            <ul className="text-white space-y-4">
-              <li className="flex justify-between">
-                <span>Borrowed Token:</span>
-                <span>{selectedToken?.label || 'None'}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Borrowed Amount:</span>
-                <span>{amount || '0'}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Collateral Amount:</span>
-                <span>{collateralAmount || '0'}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Deposited Collateral:</span>
-                <span>{depositedCollateral.toFixed(2)}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>TVL:</span>
-                <span>${tvl.toLocaleString()}</span>
-              </li>
-              <li className="flex justify-between">
-                <span>Days Until Borrowing Ends:</span>
-                <span>{borrowingDuration?.label || 'N/A'}</span>
-              </li>
-            </ul>
-          </div>
+    <div className="pt-40 px-56">
+      <div className="grid grid-cols-5 grid-rows-2 gap-4">
+        {/* Left Column - 3/5 width */}
+        <div className="col-span-3 bg-gray-950 rounded-xl h-full px-10 py-5">
+          <Drawer drawerItems={tabsBorrow}
+            title='Borrow Tokens'
+            classParent='bg-transparent border border-gray-800 rounded-full p-1'
+            classActiveTab="bg-gray-800 font-semibold w-full py-2 px-4 rounded-full text-center text-white w-full"
+            classDeactiveTab='py-2 px-4 rounded-full text-center text-white w-full' />
         </div>
-      </div>
 
-      <div className="flex justify-center mb-12">
-        <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black p-6 rounded-lg shadow-lg w-full max-w-screen-lg flex flex-wrap">
-          <div className="w-full md:w-1/2 p-4">
-            <label className="block text-white mb-2">Select Token for Collateral</label>
-            <Select
-              options={tokenOptions}
-              value={selectedDepositToken}
-              onChange={setSelectedDepositToken}
-              styles={customStyles}
-              components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
-              placeholder="Select token"
-            />
-          </div>
-          <div className="w-full md:w-1/2 p-4">
-            <label className="block text-white mb-2">Deposit Collateral</label>
-            <input
-              type="number"
-              value={depositCollateral}
-              onChange={(e) => setDepositCollateral(e.target.value)}
-              placeholder="Deposit Collateral"
-              className="w-full p-2 bg-black bg-opacity-60 border border-gray-600 rounded text-white"
-            />
-          </div>
-          <div className="w-full p-4">
-            <Button 
-              onClick={handleDepositCollateral}
-              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 transition duration-300 text-white py-2 px-4 rounded-lg"
-            >
-              Deposit Collateral
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Borrow Form */}
-      <div className="flex justify-center mb-12">
-        <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black p-6 rounded-lg shadow-lg w-full max-w-screen-lg flex flex-wrap">
-          <div className="w-full md:w-1/2 p-4">
-            <label className="block text-white mb-2">Token</label>
-            <Select
-              options={tokenOptions}
-              value={selectedToken}
-              onChange={setSelectedToken}
-              styles={customStyles}
-              components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
-              placeholder="Select token"
-            />
-          </div>
-          <div className="w-full md:w-1/2 p-4">
-            <label className="block text-white mb-2">Amount</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Amount"
-              className="w-full p-2 bg-black bg-opacity-60 border border-gray-600 rounded text-white"
-            />
-          </div>
-          <div className="w-full md:w-1/2 p-4">
-            <label className="block text-white mb-2">Borrowing Duration</label>
-            <Select
-              options={borrowingDurations}
-              value={borrowingDuration}
-              onChange={setBorrowingDuration}
-              styles={customStyles}
-              placeholder="Select duration"
-            />
-          </div>
-          <div className="w-full p-4">
-            <Button 
-              onClick={handleBorrow}
-              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 transition duration-300 text-white py-2 px-4 rounded-lg"
-            >
-              Borrow
-            </Button>
+        {/* Right Column - 2/5 width */}
+        <div className="col-span-2 bg-gray-700 border border-gray-600 rounded-lg shadow-lg h-full">
+          <div className="w-full p-5">
+            <h2 className="text-xl text-start font-semibold pt-3 pb-6 text-black">Summary</h2>
+            <div className="flex items-center justify-between rounded-xl border border-gray-300 px-3 py-5">
+              <p className="text-2xl font-medium text-gray-500">TVL</p>
+              <p className="text-2xl font-bold text-black">${tvl.toLocaleString()}</p>
+            </div>
+            <div className="divider"></div>
+            {/* Collateral */}
+            <div className="rounded-xl border border-gray-300 px-3 py-5 space-y-3">
+              <h3 className="text-xl text-gray-600 font-semibold">Collateral</h3>
+              <div className="divider"></div>
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-gray-500">Amount</p>
+                <p className="font-bold text-black">{collateralAmount || '0'}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-gray-500">Deposit</p>
+                <p className="font-bold text-black">{depositedCollateral.toFixed(2)}</p>
+              </div>
+            </div>
+            {/* Borrow */}
+            <div className="divider"></div>
+            <div className="rounded-xl border border-gray-300 px-3 py-5 space-y-3">
+              <h3 className="text-xl text-gray-600 font-semibold">Borrow</h3>
+              <div className="divider"></div>
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-gray-500">Tokens</p>
+                <p className="font-bold text-black">{selectedToken?.label || 'None'}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-gray-500">Amount</p>
+                <p className="font-bold text-black">{amount || '0'}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-gray-500">Borrowing Ends</p>
+                <p className="font-bold text-black">{borrowingDuration?.label || 'N/A'}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
   );
 }
 
