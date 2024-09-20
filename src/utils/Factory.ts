@@ -1,4 +1,3 @@
-// factoryHandler.ts
 import { ethers } from 'ethers';
 
 const COFINANCE_FACTORY_ABI = [
@@ -441,7 +440,7 @@ const COFINANCE_FACTORY_ABI = [
 	}
 ];
 
-const COFINANCE_FACTORY_ADDRESS = '0xAB83e0b67Dae4a6186b963b3a828c596A3e0E0E0'; 
+const COFINANCE_FACTORY_ADDRESS = '0x1277d444e22110e7950433c7b9c0487b3c0507cc'; 
 
 export const createPool = async (
   provider: ethers.BrowserProvider,
