@@ -59,6 +59,10 @@ const config: Config = {
       },
       backgroundImage: {
         'explore': 'url(/explore.svg)',
+        'blur-hero': 'url(/redesign/Hero.png)',
+        'portfolio': 'url(/redesign/Cubic.png)',
+        'choose-us': 'url(/redesign/Sphere.png)',
+        'borrow': 'url(/redesign/Helix.png)',
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",

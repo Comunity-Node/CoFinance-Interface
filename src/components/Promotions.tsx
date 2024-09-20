@@ -38,7 +38,7 @@ function PromotionBanner() {
     return (
         <section className="p-10">
             <div className="flex items-center justify-center space-x-10">
-                <div className="relative max-w-2xl text-start">
+                <div className="relative max-w-2xl text-start" data-aos="fade-right">
                     <p className="text-4xl font-bold leading-relaxed">
                         Discover Top News On the Blockchain Space
                     </p>

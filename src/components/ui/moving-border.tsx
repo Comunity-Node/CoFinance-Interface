@@ -137,7 +137,7 @@ export function ButtonGlass({
     return (
         <button
             className={cn(
-                "btn glass bg-white relative text-xl h-12 w-40 p-[1px] overflow-hidden",
+                "btn glass bg-white relative text-xl h-12 w-48 p-[1px] overflow-hidden",
                 containerClassName
             )}
             style={{ borderRadius }}

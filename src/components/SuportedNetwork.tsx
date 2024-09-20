@@ -70,12 +70,12 @@ const featuredTokens = [
 
 function UpcomingTokens() {
     return (
-        <section className="py-10">
-            <div className="relative max-w-7xl mx-auto">
+        <section className="py-20">
+            <div className="relative max-w-7xl mx-auto" data-aos="fade-up">
                 <div className="text-center">
-                    <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-white sm:text-4xl">Our Suported Network</p>
+                    <p className='text-gray-600 text-xl uppercase'>Supports</p>
+                    <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-white sm:text-4xl">Our Suported Networks</p>
                 </div>
-
                 <div className="mt-10">
                     <HoverEffect
                         items={featuredTokens.map(token => (

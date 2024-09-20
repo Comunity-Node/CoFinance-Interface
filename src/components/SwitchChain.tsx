@@ -59,7 +59,7 @@ const ChainSwitchButton: React.FC = () => {
       </Button>
 
       {menuOpen && (
-        <div className="absolute right-0 mt-5 w-auto p-3 text-white border border-gray-900 bg-black shadow-lg shadow-blue-950 rounded-lg">
+        <div className="absolute right-0 mt-5 w-auto p-3 text-white border border-gray-900 bg-black shadow-lg ">
           {chains.map((chain) => (
             <button
               key={chain.value}
@@ -75,7 +75,7 @@ const ChainSwitchButton: React.FC = () => {
                   <span>{chain.label}</span>
                 </div>
                 {chain.soon && (
-                  <span className=" inline-block py-1 px-3 text-xs font-regular text-white bg-transparent border border-gray-500 rounded-full">
+                  <span className=" inline-block py-1 px-3 text-xs font-regular text-white bg-black border border-gray-500 rounded-full">
                     Soon
                   </span>
                 )}
