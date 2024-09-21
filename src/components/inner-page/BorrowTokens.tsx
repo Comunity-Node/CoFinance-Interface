@@ -111,10 +111,10 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                     tokenOptions={defaultTokenOptions}
                     handleOnChange={handleOnChangeToken}
                     handleValue={selectedBorrowToken} // Pass the full TokenOption object
-                    className="border-none hover:border-0  w-full px-0 py-2"
+                    className="border-none hover:border-0 w-full px-0 py-2"
                 />
                 <input
-                    type="number"
+                    type="tel"
                     value={borrowAmount || ''}
                     onChange={(e) => setBorrowAmount(parseFloat(e.target.value) || 0)} // Ensure valid number
                     placeholder="0"
@@ -136,7 +136,6 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                     onClick={onBorrowTokens}
                     disabled={isBorrowing}
                 >
-                    {isBorrowing ? 'Borrowing...' : 'Borrow'} <MdOutlineArrowOutward />
                     {isBorrowing ? 'Borrowing...' : 'Borrow'} <MdOutlineArrowOutward />
                 </button>
             </div>

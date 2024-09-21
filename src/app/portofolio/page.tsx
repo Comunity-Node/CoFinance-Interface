@@ -1,6 +1,6 @@
 'use client';
 import Drawer from '@/components/Drawer';
-import React from 'react';
+import React, { useState } from 'react';
 import { FaArrowsAltH } from 'react-icons/fa';
 import { MdOutlineArrowOutward } from 'react-icons/md';
 
@@ -121,65 +121,97 @@ const TokenHolders = ({ tokenHolders }) => (
 );
 
 // StakingTokens Component
-const StakingTokens = ({ stakingTokens }) => (
-  <div className="bg-[#141414] p-6 rounded-lg min-w-full ">
-    {stakingTokens.length === 0 ? (
-      <p className="text-white text-center">No staking tokens available</p>
-    ) : (
-      <div className="overflow-x-auto">
-        <table className="table-auto w-full">
-          <thead>
-            <tr>
-              <th className="p-4 border-b border-gray-800 text-left font-normal text-gray-300">Token</th>
-              <th className="p-4 border-b border-gray-800 text-right font-normal text-gray-300">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stakingTokens.map((token) => (
-              <tr key={token.id} className="hover:bg-[#576574] hover:text-[#141414] hover:rounded-lg transition duration-300 ease-in-out">
-                <td className="p-4 flex items-center space-x-4">
-                  <img src={token.image} alt={token.tokenName} className="w-10 h-10 rounded-full border-none" />
-                  <span className="text-gray-200 font-regular text-lg">{token.tokenName}</span>
-                </td>
-                <td className="p-4 text-right text-gray-200">${token.amount.toFixed(2)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </div>
-);
+function StakingTokens({ stakingTokens }) {
 
-const StakingLPTokens = ({ stakingLPTokens }) => (
-  <div className="bg-[#141414] p-6 rounded-lg min-w-full mt-6"> {/* Added mt-6 for margin-top */}
-    {stakingLPTokens.length === 0 ? (
-      <p className="text-white text-center">No LP tokens available</p>
-    ) : (
-      <div className="overflow-x-auto">
-        <table className="table-auto w-full">
-          <thead>
-            <tr>
-              <th className="p-4 border-b border-gray-800 text-left font-normal text-gray-300">Staking LP</th>
-              <th className="p-4 border-b border-gray-800 text-right font-normal text-gray-300">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stakingLPTokens.map((token) => (
-              <tr key={token.id} className="hover:bg-[#576574] hover:text-[#141414] hover:rounded-lg transition duration-300 ease-in-out">
-                <td className="p-4 flex items-center space-x-4">
-                  <img src={token.image} alt={token.tokenName} className="w-10 h-10 rounded-full" />
-                  <span className="text-gray-200 font-regular text-lg">{token.tokenName}</span>
-                </td>
-                <td className="p-4 text-right text-gray-200">${token.amount.toFixed(2)}</td>
+  return (
+    <div className="bg-[#141414] p-6 rounded-lg min-w-full ">
+      {stakingTokens.length === 0 ? (
+        <p className="text-white text-center">No staking tokens available</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full">
+            <thead>
+              <tr>
+                <th className="p-4 border-b border-gray-800 text-left font-normal text-gray-300">Token</th>
+                <th className="p-4 border-b border-gray-800 text-right font-normal text-gray-300">Amount</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </div>
-);
+            </thead>
+            <tbody>
+              {stakingTokens.map((token) => (
+                <tr key={token.id} className="hover:bg-[#576574] hover:text-[#141414] hover:rounded-lg transition duration-300 ease-in-out">
+                  <td className="p-4 flex items-center space-x-4">
+                    <img src={token.image} alt={token.tokenName} className="w-10 h-10 rounded-full border-none" />
+                    <span className="text-gray-200 font-regular text-lg">{token.tokenName}</span>
+                  </td>
+                  <td className="p-4 text-right text-gray-200">${token.amount.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StakingLPTokens({ stakingLPTokens }) {
+  const [imageError, setImageError] = useState(true);
+
+  const getInitials = (name: string) => {
+    if (!name) return 'N/A'; // Handle missing names
+    const words = name.split(' ').filter(word => isNaN(Number(word))); // Split by spaces and ignore numbers
+    const initials = words.map(word => word[0]).join('').toUpperCase(); // Get first letter of each word and join them
+    return initials.slice(0, 2); // Return only the first two initials
+  };
+
+
+  return (
+    <div className="bg-[#141414] p-6 rounded-lg min-w-full mt-6"> {/* Added mt-6 for margin-top */}
+      {stakingLPTokens.length === 0 ? (
+        <p className="text-white text-center">No LP tokens available</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full">
+            <thead>
+              <tr>
+                <th className="p-4 border-b border-gray-800 text-left font-normal text-gray-300">Staking LP</th>
+                <th className="p-4 border-b border-gray-800 text-right font-normal text-gray-300">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stakingLPTokens.map((token) => (
+                <tr key={token.id} className="hover:bg-[#576574] hover:text-[#141414] hover:rounded-lg transition duration-300 ease-in-out">
+                  <td className="p-4 flex items-center space-x-4">
+                    {!token.image || imageError ? (
+                      // Fallback if image is missing or fails to load
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500">
+                          {getInitials(token.tokenName)}
+                        </span>
+                      </div>
+                    ) : (
+                      // Render image if it exists and loads successfully
+                      <img
+                        src={token.image}
+                        alt={getInitials(token.tokenName)}
+                        className="w-10 h-10 rounded-full"
+                        onError={() => setImageError(false)} // If image fails to load, set imageError to true
+                      />
+                    )}
+
+                    <span className="text-gray-200 font-regular text-lg">{token.tokenName}</span>
+                  </td>
+
+                  <td className="p-4 text-right text-gray-200">${token.amount.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const Loans = ({ loans }) => (
   <div className="bg-[#141414] p-6 rounded-lg min-w-full">

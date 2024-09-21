@@ -63,6 +63,7 @@ const config: Config = {
         'portfolio': 'url(/redesign/Cubic.png)',
         'choose-us': 'url(/redesign/Sphere.png)',
         'borrow': 'url(/redesign/Helix.png)',
+        'trade': 'url(/redesign/Trade.png)',
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",

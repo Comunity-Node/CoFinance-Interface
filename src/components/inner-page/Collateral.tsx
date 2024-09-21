@@ -89,7 +89,7 @@ const Collateral: React.FC<CollateralProps> = ({ tokenOptions = [], handleDeposi
                     placeholder="Select token"
                 />
                 <input
-                    type="number"
+                    type="tel"
                     value={collateralAmount || ''}
                     onChange={(e) => setCollateralAmount(parseFloat(e.target.value))}
                     placeholder="0"

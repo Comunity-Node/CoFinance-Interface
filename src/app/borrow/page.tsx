@@ -5,7 +5,6 @@ import Collateral from '@/components/inner-page/Collateral';
 import BorrowTokens from '@/components/inner-page/BorrowTokens'; // Import BorrowTokens
 import tokens from '@/data/token.json';
 import durationsData from '@/data/durations.json';
-import BorrowTokens from '@/components/inner-page/BorrowTokens';
 
 const Borrow: React.FC = () => {
   const tabsBorrow = [
@@ -19,7 +18,7 @@ const Borrow: React.FC = () => {
             image: token.image,
           }))}
           handleDepositCollateral={async (amount) => {
-            return { amount: 0 }; 
+            return { amount: 0 };
           }}
         />
       ),
@@ -35,7 +34,7 @@ const Borrow: React.FC = () => {
           }))}
           // Convert `value` to a string
           durationOptions={durationsData.durations.map(items => ({
-            value: String(items.value), 
+            value: String(items.value),
             label: items.label,
           }))}
           handleBorrowAmounts={async (amount) => {
@@ -58,7 +57,10 @@ const Borrow: React.FC = () => {
               <p className="text-4xl font-bold text-white">${ltv.toLocaleString()}</p>
             </div>
             <div className="text-end" data-aos="fade-left">
-              <p className='text-gray-600 text-md uppercase'>Your deposited Collateral</p>
+              <p className='text-gray-600 text-md uppercase'>Your Deposited Collateral</p>
+              <p className="py-2 text-2xl leading-8 font-semibold tracking-tight text-white sm:text-4xl">
+                Collateral
+              </p>
               <p className="text-sm font-normal text-gray-400">On Our Platforms.</p>
             </div>
           </div>
@@ -68,9 +70,9 @@ const Borrow: React.FC = () => {
               <p className="text-4xl font-bold text-white">${collateralBalance.toLocaleString()}</p>
             </div>
             <div className="text-end" data-aos="fade-left">
-              <p className='text-gray-600 text-md uppercase'>Collateral Balances</p>
+              <p className='text-gray-600 text-md uppercase'>Your Borrowed Amounts</p>
               <p className="py-2 text-2xl leading-8 font-semibold tracking-tight text-white sm:text-4xl">
-                Collateral
+                Borrows
               </p>
               <p className="text-sm font-normal text-gray-400">On Our Platforms.</p>
             </div>
