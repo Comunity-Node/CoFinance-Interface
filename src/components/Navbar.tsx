@@ -37,7 +37,7 @@ const Navbar = () => {
                             <div className="space-y-2">
                                 <p className="text-gray-500 font-normal mb-2 font-10">Pools</p>
                                 <HoveredLink href="/staking">Staking Pools</HoveredLink>
-                                <HoveredLink href="/pool">Pool</HoveredLink>
+                                <HoveredLink href="/pools">Pool</HoveredLink>
                                 <HoveredLink href="/tokenstake">Token Staking</HoveredLink>
                             </div>
 

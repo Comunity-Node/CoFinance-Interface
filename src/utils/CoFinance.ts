@@ -1090,7 +1090,6 @@ const COFINANCE_ABI = [
 		"type": "function"
 	}
 ];
-// Function to get total liquidity
 export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ totalA: string, totalB: string }> => {
     try {
         const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);

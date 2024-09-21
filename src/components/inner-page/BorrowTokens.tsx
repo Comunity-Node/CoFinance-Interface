@@ -51,6 +51,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
         }
 
         setIsBorrowing(true);
+        setIsBorrowing(true);
         try {
             const result = await handleBorrowAmounts(borrowAmount);
             setBorrowAmount(result.amount);
@@ -84,6 +85,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                 confirmButtonText: 'Close',
             });
         } finally {
+            setIsBorrowing(false);
             setIsBorrowing(false);
         }
     };
@@ -134,6 +136,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                     onClick={onBorrowTokens}
                     disabled={isBorrowing}
                 >
+                    {isBorrowing ? 'Borrowing...' : 'Borrow'} <MdOutlineArrowOutward />
                     {isBorrowing ? 'Borrowing...' : 'Borrow'} <MdOutlineArrowOutward />
                 </button>
             </div>

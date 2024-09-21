@@ -12,7 +12,7 @@ const totalLiquidityData = [
     tokenB: 'swisstronik',
     liquidity: 1000,
     imageA: '/planq.jpg',
-    imageB: '/tokens/swisstronik.png'
+    imageB: '/tokens/swisstronik.png',
   },
   {
     id: '2',
@@ -20,7 +20,7 @@ const totalLiquidityData = [
     tokenB: 'oraichain',
     liquidity: 500,
     imageA: '/tokens/bitcoin.png',
-    imageB: '/tokens/orai.jpg'
+    imageB: '/tokens/orai.jpg',
   },
   // Add more pools as needed
 ];
@@ -55,7 +55,8 @@ const overviewList = [
   },
 ];
 
-const PoolContent = ({ pools }: { pools: Array<{ id: number; imageA: string; tokenA: string; imageB: string; tokenB: string; liquidity: number }> }) => (
+// PoolContent Component
+const PoolContent = ({ pools }) => (
   <div className="bg-[#141414] p-6 rounded-lg min-w-full">
     {pools.length === 0 ? (
       <p className="text-white text-center">No pools available</p>
@@ -64,7 +65,7 @@ const PoolContent = ({ pools }: { pools: Array<{ id: number; imageA: string; tok
         <table className="table-auto w-full">
           <thead>
             <tr>
-              <th className="p-4 border-b border-gray-800 text-left font-normal text-gray-400">Token - Chain</th>
+              <th className="p-4 border-b border-gray-800 text-left font-normal text-gray-400">Liquidity</th>
               <th className="p-4 border-b border-gray-800 text-right font-normal text-gray-400">Liquidity</th>
             </tr>
           </thead>
@@ -86,11 +87,10 @@ const PoolContent = ({ pools }: { pools: Array<{ id: number; imageA: string; tok
       </div>
     )}
   </div>
-  // </div>
 );
 
-
-const TokenHolders = ({ tokenHolders }: { tokenHolders: Array<{ id: number; image: string; name: string; tokens: number }> }) => (
+// TokenHolders Component
+const TokenHolders = ({ tokenHolders }) => (
   <div className="bg-[#141414] p-6 rounded-lg min-w-full">
     {tokenHolders.length === 0 ? (
       <p className="text-white text-center">No token holders available</p>
@@ -120,9 +120,9 @@ const TokenHolders = ({ tokenHolders }: { tokenHolders: Array<{ id: number; imag
   </div>
 );
 
-
-const StakingTokens = ({ stakingTokens }: { stakingTokens: Array<{ id: number; image: string; tokenName: string; amount: number }> }) => (
-  <div className="bg-[#141414] p-6 rounded-lg min-w-full">
+// StakingTokens Component
+const StakingTokens = ({ stakingTokens }) => (
+  <div className="bg-[#141414] p-6 rounded-lg min-w-full ">
     {stakingTokens.length === 0 ? (
       <p className="text-white text-center">No staking tokens available</p>
     ) : (
@@ -151,84 +151,128 @@ const StakingTokens = ({ stakingTokens }: { stakingTokens: Array<{ id: number; i
   </div>
 );
 
+const StakingLPTokens = ({ stakingLPTokens }) => (
+  <div className="bg-[#141414] p-6 rounded-lg min-w-full mt-6"> {/* Added mt-6 for margin-top */}
+    {stakingLPTokens.length === 0 ? (
+      <p className="text-white text-center">No LP tokens available</p>
+    ) : (
+      <div className="overflow-x-auto">
+        <table className="table-auto w-full">
+          <thead>
+            <tr>
+              <th className="p-4 border-b border-gray-800 text-left font-normal text-gray-300">Staking LP</th>
+              <th className="p-4 border-b border-gray-800 text-right font-normal text-gray-300">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stakingLPTokens.map((token) => (
+              <tr key={token.id} className="hover:bg-[#576574] hover:text-[#141414] hover:rounded-lg transition duration-300 ease-in-out">
+                <td className="p-4 flex items-center space-x-4">
+                  <img src={token.image} alt={token.tokenName} className="w-10 h-10 rounded-full" />
+                  <span className="text-gray-200 font-regular text-lg">{token.tokenName}</span>
+                </td>
+                <td className="p-4 text-right text-gray-200">${token.amount.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+);
 
-
-const drawerList = [
-  {
-    label: "Liquidity",
-    content: <PoolContent pools={[
-      {
-        tokenA: 'planq',
-        tokenB: 'swisstronik',
-        liquidity: 1000,
-        imageA: '/planq.jpg',
-        imageB: '/tokens/swisstronik.png',
-        id: 1
-      },
-      {
-        tokenA: 'bitcoin',
-        tokenB: 'oraichain',
-        liquidity: 500,
-        imageA: '/tokens/bitcoin.png',
-        imageB: '/tokens/orai.jpg',
-        id: 2
-      },
-      // Add more pools as needed
-    ]} />,
-  },
-  {
-    label: "Token Holders",
-    content: <TokenHolders tokenHolders={[
-      {
-        id: 1,
-        name: 'planq',
-        tokens: 2000,
-        image: '/tokens/planq.jpg', // Add the image path
-      },
-      {
-        id: 2,
-        name: 'oraichain',
-        tokens: 1500,
-        image: '/tokens/orai.jpg', // Add the image path
-      },
-      {
-        id: 3,
-        name: 'bitocin',
-        tokens: 3000,
-        image: '/tokens/bitcoin.png', // Add the image path
-      },
-      // Add more holders as needed
-    ]} />,
-  },
-  {
-    label: "Staking Tokens",
-    content: <StakingTokens stakingTokens={[
-      {
-        id: 1,
-        tokenName: 'planq',
-        amount: 500,
-        image: '/tokens/planq.jpg', // Add the image path
-      },
-      {
-        id: 2,
-        tokenName: 'swisstronik',
-        amount: 300,
-        image: '/tokens/swisstronik.png', // Add the image path
-      },
-      // Add more staking tokens as needed
-    ]} />,
-  },
-];
+const Loans = ({ loans }) => (
+  <div className="bg-[#141414] p-6 rounded-lg min-w-full">
+    {loans.length === 0 ? (
+      <p className="text-white text-center">No loans available</p>
+    ) : (
+      <div className="overflow-x-auto">
+        <table className="table-auto w-full">
+          <thead>
+            <tr>
+              <th className="p-4 border-b border-gray-800 text-left font-normal text-gray-300">Collateral Type</th>
+              <th className="p-4 border-b border-gray-800 text-right font-normal text-gray-300">Loan Amount</th>
+              <th className="p-4 border-b border-gray-800 text-right font-normal text-gray-300">Collateral</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loans.map((loan) => (
+              <tr key={loan.id} className="hover:bg-[#576574] hover:text-[#141414] hover:rounded-lg transition duration-300 ease-in-out">
+                <td className="p-4 text-gray-200">{loan.collateralType}</td>
+                <td className="p-4 text-right text-gray-200">${loan.loanAmount.toFixed(2)}</td>
+                <td className="p-4 text-right text-gray-200">${loan.collateral.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+);
 
 function Portofolio() {
+  // Dummy data for staking LP tokens and loans
+  const stakingLPTokens = [
+    {
+      id: 1,
+      tokenName: 'LP Token 1',
+      amount: 800,
+      image: '/tokens/lp-token1.png',
+    },
+    {
+      id: 2,
+      tokenName: 'LP Token 2',
+      amount: 500,
+      image: '/tokens/lp-token2.png',
+    },
+  ];
+
+  const loans = [
+    {
+      id: 1,
+      loanAmount: 500,
+      collateral: 1000,
+      collateralType: 'PLANQ',
+    },
+    {
+      id: 2,
+      loanAmount: 300,
+      collateral: 600,
+      collateralType: 'SWISSTRONIK',
+    },
+  ];
+
+  // Update the drawer list to include new components
+  const drawerList = [
+    {
+      label: "Liquidity",
+      content: (
+        <>
+          <PoolContent pools={totalLiquidityData} />
+          <StakingLPTokens stakingLPTokens={stakingLPTokens} />
+        </>
+      ),
+    },
+    {
+      label: "Token Holders",
+      content: <TokenHolders tokenHolders={[]} />, // Add token holders data here
+    },
+    {
+      label: "Staking Tokens",
+      content: <StakingTokens stakingTokens={[]} />, // Add staking tokens data here
+    },
+    {
+      label: "Loans",
+      content: <Loans loans={loans} />,
+    },
+  ];
+
   return (
     <section className="min-h-screen animation-bounce bg-portfolio bg-no-repeat bg-contain image-full">
       <div className="pt-40 px-40">
         <div className="flex items-center justify-between">
           <div className="text-end py-5 space-y-3">
-            <p className="text-4xl font-bold text-white sm:text-4xl">
-              Overview
-            </p>
+            <p className="text-4xl font-bold text-white sm:text-4xl">Overview</p>
           </div>
         </div>
         <div className="flex flex-row-reverse items-center py-5 gap-6 px-0 justify-between rounded-xl max-w-screen bg-transparent">
@@ -236,9 +280,7 @@ function Portofolio() {
             <div key={index} className="card bg-[#141414] w-full shadow-xl hover:bg-custom-radial-gradient">
               <div className="h-full px-5 py-7 space-y-1 z-50">
                 <div className="flex">
-                  <p className="text-md font-normal text-gray-400 w-full limit-text ">
-                    {item.title}
-                  </p>
+                  <p className="text-md font-normal text-gray-400 w-full limit-text">{item.title}</p>
                   <MdOutlineArrowOutward />
                 </div>
                 <div>
@@ -246,9 +288,7 @@ function Portofolio() {
                     {item.amount ? `$${item.amount.toFixed(2)}` : "N/A"}
                   </span>
                   {item.unit && (
-                    <span className="ml-2 text-md font-medium text-gray-400">
-                      {item.unit}
-                    </span>
+                    <span className="ml-2 text-md font-medium text-gray-400">{item.unit}</span>
                   )}
                 </div>
               </div>
@@ -257,7 +297,13 @@ function Portofolio() {
         </div>
 
         <div className="py-0">
-          <Drawer drawerItems={drawerList} classParent='py-2' title='Token Assets' classActiveTab='bg-[#bdc3c7] py-2 px-4 rounded-sm text-left text-[#141414]' classDeactiveTab='bg-transparent border border-[#bdc3c7] py-2 px-4 rounded-sm text-left text-gray-300' />
+          <Drawer
+            drawerItems={drawerList}
+            classParent='py-2'
+            title='Token Assets'
+            classActiveTab='bg-[#bdc3c7] py-2 px-4 rounded-sm text-left text-[#141414]'
+            classDeactiveTab='bg-transparent border border-[#bdc3c7] py-2 px-4 rounded-sm text-left text-gray-300'
+          />
         </div>
       </div>
     </section>

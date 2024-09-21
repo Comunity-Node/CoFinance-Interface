@@ -403,116 +403,84 @@ function TokenStake() {
   
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-gray-900 via-gray-800 to-black py-12 pt-24">
-      {/* Wallet Connection */}
-      <div className="fixed top-10 right-4 z-50">
-        {showConnectButton && (
-          <Button
-            onClick={connectWallet}
-          >
-            Connect Keplr Wallet
-          </Button>
+    <div className="min-h-screen animation-bounce bg-portfolio bg-no-repeat bg-contain py-12 pt-36">
+      <div className="px-40">
+        <div className="fixed top-10 right-4 z-50">
+          {showConnectButton && (
+            <Button onClick={connectWallet}>Connect Keplr Wallet</Button>
+          )}
+          {walletConnected && (
+            <Button onClick={disconnectWallet}>Disconnect Wallet</Button>
+          )}
+          {error && <p className="text-red-500 mt-4">{error}</p>}
+        </div>
+
+        {walletConnected && account && (
+          <div className="flex justify-center mb-12">
+            <div className="bg-[#141414] p-6 rounded-lg shadow-lg w-full max-w-6xl">
+              <h2 className="text-2xl font-semibold text-white mb-4">Account Details</h2>
+              <div className="space-y-4 text-gray-300">
+                <p>Address: {account.address}</p>
+                <p>Balance: {balance}</p>
+                <p>Staked Amount: {stakedAmount} osmo</p>
+                <p>Reward Staking: {reward} osmo</p>
+                <p>Staked Validator: {stakedValidator ? stakedValidator.moniker : 'None'}</p>
+                <p>Network: {selectedValidator ? selectedValidator.network : 'N/A'}</p>
+                <p>APR: {selectedValidator ? selectedValidator.apr : 'N/A'}</p> 
+              </div>
+            </div>
+          </div>
         )}
-        {walletConnected && (
-          <Button
-            onClick={disconnectWallet}
-          >
-            Disconnect Wallet
-          </Button>
+
+          <div className="flex flex-col items-center mb-12">
+            <h2 className="text-2xl font-semibold text-white mb-4">Stake Native Token</h2>
+            <div className="bg-[#141414] p-6 rounded-lg shadow-lg w-full max-w-6xl">
+              <ul className="space-y-4">
+                {validators.map((validator) => (
+                  <li key={validator.operator_address} className="flex justify-between items-center p-4 border-b border-gray-600">
+                    <span className="text-white flex-1">{validator.name}</span>
+                    <span className="text-white flex-1 text-center">{validator.APR}</span> {/* Centered */}
+                    <span className="text-white flex-1 text-right">{validator.nom}</span> {/* Right aligned */}
+                    <Button onClick={() => handleSelectValidator(validator)} className="ml-4">Manage</Button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+        {showPopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div ref={popupRef} className="bg-[#141414] p-6 rounded-lg shadow-lg max-w-md w-full">
+              <h2 className="text-xl font-semibold mb-4 text-white">Manage Staked</h2>
+              {selectedValidator && (
+                <div className="space-y-4">
+                  <p className="text-gray-300">Selected Validator: {selectedValidator.moniker}</p>
+                  <div className="flex space-x-4">
+                    <div className="w-1/2">
+                      <label className="block text-gray-300">Stake Amount</label>
+                      <input type="text" value={stakeAmount} onChange={(e) => setStakeAmount(e.target.value)} className="mt-1 p-2 border border-gray-500 rounded w-full bg-gray-700 text-white" />
+                    </div>
+                    <div className="w-1/2">
+                      <label className="block text-gray-300">Unstake Amount</label>
+                      <input type="text" value={unstakeAmount} onChange={(e) => setUnstakeAmount(e.target.value)} className="mt-1 p-2 border border-gray-500 rounded w-full bg-gray-700 text-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <Button onClick={handleStake} className="bg-green-600 text-white">Stake</Button>
+                    <Button onClick={handleUnstake} className="bg-red-600 text-white">Unstake</Button>
+                    <Button onClick={handleClaimRewards} className="bg-yellow-600 text-white">Claim Rewards</Button>
+                  </div>
+                  {txHash && (
+                    <p className="text-green-400 mt-4">
+                      Transaction: <a href={`https://www.mintscan.io/osmosis-testnet/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="underline">success</a>
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         )}
-        {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
-
-      {/* Account Card */}
-      {walletConnected && account && (
-        <div className="flex justify-center mb-12">
-          <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black border border-gray-600 p-6 rounded-lg shadow-lg w-full max-w-6xl backdrop-blur-sm">
-            <h2 className="text-2xl font-semibold text-white mb-4">Account Details</h2>
-            <div className="space-y-4">
-              <p className="text-gray-300">Address: {account.address}</p>
-              <p className="text-gray-300">Balance: {balance}</p>
-              <p className="text-gray-300">Staked Amount: {stakedAmount} osmo</p>
-              <p className="text-gray-300">Reward Staking: {reward} osmo</p>
-              <p className="text-gray-300">Staked Validator: {stakedValidator ? stakedValidator.moniker : 'None'}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Validator List */}
-      <div className="flex flex-col items-center mb-12">
-        <h2 className="text-2xl font-semibold text-white mb-4">Validators</h2>
-        <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black border border-gray-600 p-6 rounded-lg shadow-lg w-full max-w-6xl backdrop-blur-sm">
-          <ul className="space-y-4">
-            {validators.map((validator) => (
-              <li key={validator.operator_address} className="flex justify-between items-center p-4 border border-gray-600 rounded-lg">
-                <span className="text-white">{validator.moniker}</span>
-                <span className="text-white"> network: {validator.name}</span>
-                <span className="text-white"> Estimated APR: {validator.APR}</span>
-                <span className="text-white"> Fee: {validator.fee}</span>
-                <Button
-                  onClick={() => handleSelectValidator(validator)}
-                >
-                  Manage
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-      {showPopup && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div
-      ref={popupRef}
-      className="bg-gradient-to-r from-gray-800 via-gray-900 to-black border border-gray-600 p-6 rounded-lg shadow-lg max-w-md mx-4 w-full backdrop-blur-sm"
-    >
-      <h2 className="text-xl font-semibold mb-4 text-white">Manage Staked</h2>
-      {selectedValidator && (
-        <div className="space-y-4">
-          <p className="text-gray-300">Selected Validator: {selectedValidator.moniker}</p>
-          <div className="flex space-x-4">
-            <div className="w-1/2">
-              <label className="block text-gray-300">Stake Amount</label>
-              <input
-                type="text"
-                value={stakeAmount}
-                onChange={(e) => setStakeAmount(e.target.value)}
-                className="mt-1 p-2 border border-gray-500 rounded w-full bg-gray-700 text-white"
-              />
-            </div>
-            <div className="w-1/2">
-              <label className="block text-gray-300">Unstake Amount</label>
-              <input
-                type="text"
-                value={unstakeAmount}
-                onChange={(e) => setUnstakeAmount(e.target.value)}
-                className="mt-1 p-2 border border-gray-500 rounded w-full bg-gray-700 text-white"
-              />
-            </div>
-          </div>
-          <div>
-            <Button onClick={handleStake} className="bg-green-600 text-white">Stake</Button>
-            <Button onClick={handleUnstake} className="bg-red-600 text-white">Unstake</Button>
-            <Button onClick={handleClaimRewards} className="bg-yellow-600 text-white">Claim Rewards</Button>
-          </div>
-          {txHash && (
-            <p className="text-green-400 mt-4">
-                Transaction: 
-                <a href={`https://www.mintscan.io/osmosis-testnet/tx/${txHash}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="underline"
-            >
-                  success
-                </a>
-            </p>
-        )}
-        </div>
-      )}
-    </div>
-  </div>
-)}
-
     </div>
   );
 }
