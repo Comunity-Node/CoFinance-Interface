@@ -2,6 +2,7 @@
 import React from 'react';
 import Drawer from '@/components/Drawer';
 import Collateral from '@/components/inner-page/Collateral';
+import BorrowTokens from '@/components/inner-page/BorrowTokens'; // Import BorrowTokens
 import tokens from '@/data/token.json';
 
 const Borrow: React.FC = () => {
@@ -16,14 +17,25 @@ const Borrow: React.FC = () => {
             image: token.image,
           }))}
           handleDepositCollateral={async (amount) => {
-            return { amount: 0 };
+            return { amount: 0 }; 
           }}
         />
       ),
     },
     {
       label: "Borrow",
-      content: null,
+      content: (
+        <BorrowTokens
+          tokenOptions={tokens.tokens.map(token => ({
+            value: token.address,
+            name: token.name,
+            image: token.image,
+          }))}
+          handleBorrowTokens={async (token, amount) => {
+            return { borrowed: amount, amount }; 
+          }}
+        />
+      ),
     },
   ];
 
@@ -38,10 +50,7 @@ const Borrow: React.FC = () => {
               <p className="text-4xl font-bold text-white">${tvl.toLocaleString()}</p>
             </div>
             <div className="text-end" data-aos="fade-left">
-              <p className='text-gray-600 text-md uppercase'>Loan To Value</p>
-              <p className="py-2 text-2xl leading-8 font-semibold tracking-tight text-white sm:text-4xl">
-                LTV
-              </p>
+              <p className='text-gray-600 text-md uppercase'>Your deposited Collateral</p>
               <p className="text-sm font-normal text-gray-400">On Our Platforms.</p>
             </div>
           </div>
