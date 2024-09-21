@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import Select, { components } from 'react-select';
 
@@ -11,9 +9,6 @@ const customStyles = {
         border: 'none',
         borderRadius: '10px',
         padding: '5px 3px',
-        width: '100%',
-        maxHeight: '100px',
-        overflowY: 'scroll'
     }),
     singleValue: (provided: any) => ({
         ...provided,
@@ -23,71 +18,66 @@ const customStyles = {
         ...provided,
         backgroundColor: '#1f2937',
     }),
-    option: (provided: any, state: { isSelected: any; }) => ({
+    option: (provided: any, state: { isSelected: any }) => ({
         ...provided,
         backgroundColor: state.isSelected ? '#374151' : '#141414',
         color: '#fff',
         '&:hover': {
             backgroundColor: '#374151',
         },
-
     }),
-    indicatorSeparator: (provided: any) => ({
+    indicatorSeparator: () => ({
         display: 'none',
     }),
-    input: (provided: any) => ({
-        ...provided,
-        color: '#fff',
-    }),
 };
 
-// Custom Option component to display images and text
-const CustomOption = (props: any, useImage: boolean) => {
-    return (
-        <components.Option {...props}>
-            <div className="flex items-center">
+// Custom Option component
+const CustomOption = (props: any) => (
+    <components.Option {...props}>
+        <div className="flex items-center">
+            {props.data.image && (
                 <img
                     src={props.data.image}
-                    alt={props.data.name}
+                    alt={props.data.label}
                     className="w-6 h-6 rounded-full mr-3"
                 />
-                {props.data.name}
-            </div>
-        </components.Option>
-    );
-};
+            )}
+            <span>{props.data.label}</span>
+        </div>
+    </components.Option>
+);
 
-// Custom SingleValue component to display selected option with image
-const CustomSingleValue = (props: any, useImage: boolean) => {
-    return (
-        <components.SingleValue {...props}>
-            <div className="flex items-center">
+// Custom SingleValue component
+const CustomSingleValue = (props: any) => (
+    <components.SingleValue {...props}>
+        <div className="flex items-center">
+            {props.data.image && (
                 <img
                     src={props.data.image}
-                    alt={props.data.name}
+                    alt={props.data.label}
                     className="w-6 h-6 rounded-full mr-3"
                 />
-                {props.data.name}
-            </div>
-        </components.SingleValue>
-    );
-};
-
-
-interface TokenOption {
-    value: string;
-    name: string;
-    image: string;
-}
+            )}
+            <span>{props.data.label}</span>
+        </div>
+    </components.SingleValue>
+);
 
 interface CustomSelectSearchProps {
-    tokenOptions: TokenOption[];
-    handleOnChange: (selectedValue: TokenOption | null) => void;
-    handleValue: TokenOption | null;
-    className: string
+    tokenOptions: Array<{ value: string; label: string; image?: string }>;
+    handleOnChange: (selectedOption: any) => void;
+    handleValue: any;
+    className: string;
+    placeholder: string;
 }
 
-const CustomSelectSearch: React.FC<CustomSelectSearchProps> = ({ tokenOptions, handleOnChange, handleValue }) => {
+const CustomSelectSearch: React.FC<CustomSelectSearchProps> = ({
+    tokenOptions,
+    handleOnChange,
+    handleValue,
+    className,
+    placeholder,
+}) => {
     return (
         <div className="w-full">
             <Select
@@ -95,11 +85,12 @@ const CustomSelectSearch: React.FC<CustomSelectSearchProps> = ({ tokenOptions, h
                 options={tokenOptions}
                 value={handleValue}
                 onChange={handleOnChange}
-                getOptionLabel={(option) => option.name}
+                getOptionLabel={(option) => option.label}
                 getOptionValue={(option) => option.value}
                 styles={customStyles}
                 components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
-                placeholder="Choose Token" />
+                placeholder={placeholder}
+            />
         </div>
     );
 };

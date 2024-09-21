@@ -103,3 +103,37 @@ body {
     text-wrap: balance;
   }
 }
+
+.my-custom-popup {
+  background-color: #141414;
+  color: white;
+}
+
+.my-custom-confirm-button {
+  background-color: #4d4d4d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s;
+}
+
+.my-custom-confirm-button:hover {
+  background-color: #6e6e6e;
+}
+
+.my-custom-cancel-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.my-custom-cancel-button:hover {
+  background-color: #e53935;
+}

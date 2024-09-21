@@ -1,93 +1,144 @@
 import React, { useState } from 'react';
 import { MdOutlineArrowOutward } from 'react-icons/md';
 import tokens from '@/data/token.json';
+import durationsData from '@/data/durations.json';
 import CustomSelectSearch from '@/components/CustomSelectSearch';
-import { TokenOption } from '@/types/TokenOption'; // Ensure this path is correct
+import { ImageSelect } from '@/types/ImageSelect';
+import { SelectList } from '@/types/SelectList';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import '@sweetalert2/theme-dark/dark.css'; // Import the dark theme
+
+const MySwal = withReactContent(Swal);
 
 interface CollateralProps {
-    tokenOptions?: TokenOption[];
-    handleDepositCollateral: (token: string, amount: number) => Promise<{ deposited: number; amount: number }>;
+    tokenOptions?: ImageSelect[];
+    durationOptions?: SelectList[];
+    handleBorrowAmounts: (amount: number) => Promise<{ amount: number }>;
 }
 
-const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], handleDepositCollateral }) => {
-    const [selectedDepositToken, setSelectedDepositToken] = useState<TokenOption | null>(null);
-    const [depositCollateral, setDepositCollateral] = useState<number>(0);
-    const [isDepositing, setIsDepositing] = useState<boolean>(false);
-    const [depositedCollateral, setDepositedCollateral] = useState<number>(0);
-    const [collateralAmount, setCollateralAmount] = useState<number>(0);
+const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOptions = [], handleBorrowAmounts }) => {
+    const [selectedBorrowToken, setSelectedBorrowToken] = useState<ImageSelect | null>(null);
+    const [selectedDuration, setSelectedDuration] = useState<SelectList | null>(null);
+    const [isBorrowing, setIsBorrowing] = useState<boolean>(false);
+    const [borrowAmount, setBorrowAmount] = useState<number>(0);
 
     const defaultTokenOptions = tokenOptions.length > 0 ? tokenOptions : tokens.tokens.map(token => ({
         value: token.address,
-        name: token.name,
+        label: token.name,
         image: token.image,
     }));
 
-    const onDepositCollateral = async () => {
-        if (!selectedDepositToken) return;
+    const durationList = durationOptions.length > 0 ? durationOptions : durationsData.durations.map(item => ({
+        value: String(item.value),  // Convert number to string
+        label: item.label,
+    }));
 
-        setIsDepositing(true);
+    const onBorrowTokens = async () => {
+        if (!selectedBorrowToken || !selectedDuration || borrowAmount <= 0) {
+            await MySwal.fire({
+                title: 'Error!',
+                text: 'Please select a token and enter a valid amount.',
+                icon: 'error',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
+                confirmButtonText: 'Close',
+            });
+            return;
+        }
+
+        setIsBorrowing(true);
         try {
-            const result = await handleDepositCollateral(selectedDepositToken.value, depositCollateral);
-            setDepositedCollateral(result.deposited);
-            setCollateralAmount(result.amount);
+            const result = await handleBorrowAmounts(borrowAmount);
+            setBorrowAmount(result.amount);
+            await MySwal.fire({
+                title: 'Deposit Successfully!',
+                html: `
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <img src="${selectedBorrowToken.image}" alt="${selectedBorrowToken.label}" style="border-radius: 50%; width: 20%; height: 20%; margin-right: 10px;">
+                    <span style="text-align: start"><strong>${selectedBorrowToken.label}</strong> with amount <strong>$${borrowAmount}</strong> & Duration ends <strong>${selectedDuration.label}</strong></span>
+                </div>
+            `,
+                icon: 'success',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
+                confirmButtonText: 'Close',
+            });
+
+        } catch (error) {
+            await MySwal.fire({
+                title: 'Error!',
+                text: 'There was a problem with the deposit.',
+                icon: 'error',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
+                confirmButtonText: 'Close',
+            });
         } finally {
-            setIsDepositing(false);
+            setIsBorrowing(false);
         }
     };
 
-    const handleOnChange = (selectedOption: TokenOption | null) => {
-        setSelectedDepositToken(selectedOption);
+    const handleOnChangeToken = (selectedOption: ImageSelect | SelectList | null) => {
+        // Depending on the list type, handle the token selection
+        if (selectedOption && 'image' in selectedOption) {
+            setSelectedBorrowToken(selectedOption as ImageSelect);
+        } else {
+            setSelectedBorrowToken(null); // Reset if no image is found
+        }
+    };
+
+    const handleOnChangeDuration = (selectedOption: SelectList | null) => {
+        setSelectedDuration(selectedOption);
     };
 
     return (
         <div className='space-y-4 py-4 h-full'>
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
+                    placeholder='Choose Tokens'
                     tokenOptions={defaultTokenOptions}
-                    handleOnChange={handleOnChange}
-                    handleValue={selectedDepositToken} // Pass the full TokenOption object
-                    className="border-none hover:border-0"
+                    handleOnChange={handleOnChangeToken}
+                    handleValue={selectedBorrowToken} // Pass the full TokenOption object
+                    className="border-none hover:border-0  w-full px-0 py-2"
                 />
                 <input
                     type="number"
-                    value={depositCollateral || ''}
-                    onChange={(e) => setDepositCollateral(parseFloat(e.target.value))}
+                    value={borrowAmount || ''}
+                    onChange={(e) => setBorrowAmount(parseFloat(e.target.value) || 0)} // Ensure valid number
                     placeholder="0"
                     className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
+                />
+            </div>
+            <div className="w-full p-2">
+                <CustomSelectSearch
+                    placeholder='Choose Durations'
+                    tokenOptions={durationList}
+                    handleOnChange={handleOnChangeDuration}
+                    handleValue={selectedDuration} // Pass the full TokenOption object
+                    className="border-none hover:border-0  w-full px-0 py-2"
                 />
             </div>
             <div className="w-full text-end rounded-lg p-1 bg-[#bdc3c7]">
                 <button
                     className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full"
-                    onClick={onDepositCollateral}
-                    disabled={isDepositing || !selectedDepositToken || depositCollateral <= 0}
+                    onClick={onBorrowTokens}
+                    disabled={isBorrowing}
                 >
-                    {isDepositing ? 'Depositing...' : 'Deposit'} <MdOutlineArrowOutward />
+                    {isBorrowing ? 'Borrowing...' : 'Borrow'} <MdOutlineArrowOutward />
                 </button>
             </div>
-            {/* {isDepositing && <SummaryBorrows depositedCollateral={depositedCollateral} collateralAmount={collateralAmount} />} */}
         </div>
     );
 };
-
-const SummaryBorrows: React.FC<{ depositedCollateral: number; collateralAmount: number }> = ({ depositedCollateral, collateralAmount }) => (
-    <>
-        <div className="flex items-center justify-center w-full">
-            <span className="loading loading-bars loading-sm"></span>
-        </div>
-        <div className="rounded-xl border border-gray-300 px-3 py-5 my-5 space-y-3">
-            <h3 className="text-xl text-gray-600 font-semibold">Collateral</h3>
-            <div className="divider"></div>
-            <div className="flex items-center justify-between">
-                <p className="font-medium text-gray-500">Amount</p>
-                <p className="font-bold text-black">{collateralAmount || '0'}</p>
-            </div>
-            <div className="flex items-center justify-between">
-                <p className="font-medium text-gray-500">Deposit</p>
-                <p className="font-bold text-black">{depositedCollateral.toFixed(2)}</p>
-            </div>
-        </div>
-    </>
-);
 
 export default BorrowTokens;

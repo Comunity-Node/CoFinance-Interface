@@ -25,6 +25,7 @@
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.95.1",
+    "@sweetalert2/theme-dark": "^5.0.18",
     "@swisstronik/utils": "^1.3.0",
     "@swisstronik/web3-plugin-swisstronik": "^1.4.0",
     "aos": "^2.3.4",
@@ -43,6 +44,8 @@
     "react-select-search": "^4.1.7",
     "sass": "^1.78.0",
     "simplex-noise": "^4.0.2",
+    "sweetalert2": "^11.14.0",
+    "sweetalert2-react-content": "^5.0.7",
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {

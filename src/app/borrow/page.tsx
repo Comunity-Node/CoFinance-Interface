@@ -3,6 +3,8 @@ import React from 'react';
 import Drawer from '@/components/Drawer';
 import Collateral from '@/components/inner-page/Collateral';
 import tokens from '@/data/token.json';
+import durationsData from '@/data/durations.json';
+import BorrowTokens from '@/components/inner-page/BorrowTokens';
 
 const Borrow: React.FC = () => {
   const tabsBorrow = [
@@ -12,7 +14,7 @@ const Borrow: React.FC = () => {
         <Collateral
           tokenOptions={tokens.tokens.map(token => ({
             value: token.address,
-            name: token.name,
+            label: token.name,
             image: token.image,
           }))}
           handleDepositCollateral={async (amount) => {
@@ -23,11 +25,28 @@ const Borrow: React.FC = () => {
     },
     {
       label: "Borrow",
-      content: null,
+      content: (
+        <BorrowTokens
+          tokenOptions={tokens.tokens.map(token => ({
+            value: token.address,
+            label: token.name,
+            image: token.image,
+          }))}
+          // Convert `value` to a string
+          durationOptions={durationsData.durations.map(items => ({
+            value: String(items.value), 
+            label: items.label,
+          }))}
+          handleBorrowAmounts={async (amount) => {
+            return { amount: 0 };
+          }}
+        />
+      ),
     },
   ];
 
-  const tvl = 1000;
+  const ltv = 1000;
+  const collateralBalance = 34050;
 
   return (
     <section className="min-h-screen animation-bounce bg-borrow bg-no-repeat bg-contain image-full text-center max-w-screen">
@@ -35,7 +54,7 @@ const Borrow: React.FC = () => {
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center justify-between rounded-xl w-full px-10 bg-explore py-5">
             <div className="text-start">
-              <p className="text-4xl font-bold text-white">${tvl.toLocaleString()}</p>
+              <p className="text-4xl font-bold text-white">${ltv.toLocaleString()}</p>
             </div>
             <div className="text-end" data-aos="fade-left">
               <p className='text-gray-600 text-md uppercase'>Loan To Value</p>
@@ -48,7 +67,7 @@ const Borrow: React.FC = () => {
 
           <div className="flex items-center justify-between rounded-xl w-full px-10 bg-explore py-5">
             <div className="text-start">
-              <p className="text-4xl font-bold text-white">${tvl.toLocaleString()}</p>
+              <p className="text-4xl font-bold text-white">${collateralBalance.toLocaleString()}</p>
             </div>
             <div className="text-end" data-aos="fade-left">
               <p className='text-gray-600 text-md uppercase'>Collateral Balances</p>
