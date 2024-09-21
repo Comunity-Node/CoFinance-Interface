@@ -7,6 +7,7 @@
       "chainid": "Oraichain",
       "rpcUrl": "https://rpc.orai.io",
       "denom": "orai",
+      "nom": "ORAI",
       "decimals": "6",
       "fee": "5%",
       "APR": "23%—27%"
@@ -18,6 +19,7 @@
       "chainid": "swisstronik_1291-1",
       "rpcUrl": "https://rpc.testnet.swisstronik.com",
       "denom": "aswtr",
+      "nom": "SWTR",
       "decimals": "18",
       "fee": "5%",
       "APR": "23%—27%"
@@ -29,6 +31,7 @@
       "chainid": "empe-testnet-2",
       "rpcUrl": "https://rpc-testnet.empe.io",
       "denom": "uempe",
+      "nom": "EMPE",
       "decimals": "6",
       "fee": "5%",
       "APR": "23%—27%"
@@ -40,6 +43,7 @@
       "chainid": "osmo-test-5",
       "rpcUrl": "https://rpc.testnet.osmosis.zone",
       "denom": "uosmo",
+      "nom": "OSMO",
       "decimals": "6",
       "fee": "5%",
       "APR": "23%—27%"
@@ -51,6 +55,7 @@
       "chainid": "planq_7070-1",
       "rpcUrl": "https://rpc.planq.network",
       "denom": "aplanq",
+      "nom": "PLQ",
       "decimals": "18",
       "fee": "5%",
       "APR": "23%—27%"
@@ -62,6 +67,7 @@
       "chainid": "crossfi-evm-testnet-1",
       "rpcUrl": "https://tendermint-rpc.testnet.ms",
       "denom": "axfi",
+      "nom": "MPX",
       "decimals": "18",
       "fee": "5%",
       "APR": "23%—27%"

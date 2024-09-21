@@ -1,35 +1,20 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import Select, { components } from 'react-select';
+import React, { useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
 import tokens from '../../data/token.json';
 import { Button } from '../../components/ui/moving-border';
 import { getTokenInfo } from '../../utils/TokenUtils';
 import { createPool } from '../../utils/Factory'; 
-
 import { ethers } from 'ethers';
+import { components } from 'react-select';
 
-const promptMetaMaskSign = async (message: string): Promise<string> => {
-  if (!window.ethereum) {
-    throw new Error('MetaMask is not installed');
-  }
-
-  // Initialize provider and signer
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const signer = await provider.getSigner();
-
-  // Request MetaMask to sign the message
-  const signature = await signer.signMessage(message);
-
-  return signature;
-};
-
+// Custom styles for React Select
 const customStyles = {
   control: (base) => ({
     ...base,
     background: 'rgba(0, 0, 0, 0.7)', // Glossy black
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    color: 'white'
+    color: 'white',
   }),
   menu: (base) => ({
     ...base,
@@ -44,10 +29,6 @@ const customStyles = {
     ...base,
     color: 'white',
   }),
-  input: (base) => ({
-    ...base,
-    color: 'white',
-  }),
 };
 
 const CustomOption = (props) => (
@@ -59,19 +40,9 @@ const CustomOption = (props) => (
   </components.Option>
 );
 
-const CustomSingleValue = (props) => (
-  <components.SingleValue {...props}>
-    <div className="flex items-center">
-      <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2 rounded-full" />
-      {props.data.label}
-    </div>
-  </components.SingleValue>
-);
-
-
-function AddPool() {
-  const [tokenA, setTokenA] = useState<{ value: string; label: string; image: string } | null>(null);
-  const [tokenB, setTokenB] = useState<{ value: string; label: string; image: string } | null>(null);
+const AddPool: React.FC = () => {
+  const [tokenA, setTokenA] = useState(null);
+  const [tokenB, setTokenB] = useState(null);
   const [poolName, setPoolName] = useState('');
   const [priceFeed, setPriceFeed] = useState('');
   const [rewardToken, setRewardToken] = useState('');
@@ -81,21 +52,6 @@ function AddPool() {
     label: token.name,
     image: token.image,
   })));
-
-  const handleAddCustomOption = async (inputValue, setSelectedOption) => {
-    if (ethers.isAddress(inputValue)) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const tokenInfo = await getTokenInfo(provider, inputValue);
-      if (tokenInfo) {
-        setTokenOptions((prevOptions) => [...prevOptions, tokenInfo]);
-        setSelectedOption(tokenInfo);
-      } else {
-        alert('Failed to fetch token info');
-      }
-    } else {
-      alert('Invalid address');
-    }
-  };
 
   const handleAddPool = async () => {
     if (!tokenA || !tokenB || !rewardToken || !priceFeed) {
@@ -122,79 +78,54 @@ function AddPool() {
     } catch (error) {
       console.error('Error adding pool:', error);
     }
-
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-gray-900 via-gray-800 to-black py-12 pt-36">
-      <h1 className="text-lg md:text-7xl text-center font-sans font-bold mb-8 text-white">Add Liquidity to Pool</h1>
-
-      <div className="text-center text-white mb-12"></div>
-
-      <div className="flex justify-center mb-12">
-        <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black p-6 rounded-lg shadow-lg w-full max-w-md backdrop-blur-sm">
-          <div className="mb-4">
-            <input
-              type="text"
-              value={poolName}
-              onChange={(e) => setPoolName(e.target.value)}
-              placeholder="Pool Name"
-              className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
-            />
-          </div>
-          <div className="mb-4 flex items-center">
-            <CreatableSelect
-              isClearable
-              options={tokenOptions}
-              value={tokenA}
-              onChange={setTokenA}
-              onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setTokenA)}
-              styles={customStyles}
-              components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
-              placeholder="Select or Enter Token"
-              className="w-full" 
-            />
-          </div>
-          <div className="mb-4 flex items-center">
-            <CreatableSelect
-              isClearable
-              options={tokenOptions}
-              value={tokenB}
-              onChange={setTokenB}
-              onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setTokenB)}
-              styles={customStyles}
-              components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
-              placeholder="Select or Enter Token"
-              className="w-full" 
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              type="text"
-              value={priceFeed}
-              onChange={(e) => setPriceFeed(e.target.value)}
-              placeholder="Price Feed Address"
-              className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              type="text"
-              value={rewardToken}
-              onChange={(e) => setRewardToken(e.target.value)}
-              placeholder="Reward Token Address"
-              className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              type="text"
-              value={"CofinanceLiquidity"}
-              readOnly
-              placeholder="Liquidity Token Name"
-              className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
-            />
-          </div>
+    <section className="min-h-screen bg-borrow bg-no-repeat bg-contain text-center">
+      <div className="pt-40 px-96 space-y-5">
+        <h1 className="text-4xl font-bold text-white mb-8">Create New Pools</h1>
+        <div className="bg-[#141414] rounded-xl p-6 space-y-4">
+          <input
+            type="text"
+            value={poolName}
+            onChange={(e) => setPoolName(e.target.value)}
+            placeholder="Pool Name"
+            className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
+          />
+          <CreatableSelect
+            isClearable
+            options={tokenOptions}
+            value={tokenA}
+            onChange={setTokenA}
+            styles={customStyles}
+            components={{ Option: CustomOption }}
+            placeholder="Select or Enter Token A"
+            className="w-full"
+          />
+          <CreatableSelect
+            isClearable
+            options={tokenOptions}
+            value={tokenB}
+            onChange={setTokenB}
+            styles={customStyles}
+            components={{ Option: CustomOption }}
+            placeholder="Select or Enter Token B"
+            className="w-full"
+          />
+          <input
+            type="text"
+            value={priceFeed}
+            onChange={(e) => setPriceFeed(e.target.value)}
+            placeholder="Price Feed Address"
+            className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
+          />
+          <input
+            type="text"
+            value={rewardToken}
+            onChange={(e) => setRewardToken(e.target.value)}
+            placeholder="Reward Token Address"
+            className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
+          />
           <div className="flex items-center mb-4">
             <input
               type="checkbox"
@@ -214,8 +145,8 @@ function AddPool() {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
-}
+};
 
 export default AddPool;
