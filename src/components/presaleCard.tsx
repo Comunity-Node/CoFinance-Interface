@@ -97,7 +97,7 @@ const PresaleCard: React.FC<PresaleCardProps> = ({ pool, onParticipate }) => {
   const progressPercentage = (accumulatedCap / hardCap) * 100;
 
   return (
-    <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black p-4 rounded-lg shadow-lg flex flex-col">
+    <div className="bg-[#141414] rounded-lg shadow-lg flex flex-col">
       <div className="flex items-center mb-4">
         <Image src={pool.image} alt={pool.token} width={50} height={50} className="rounded-full" />
         <div className="ml-4">
