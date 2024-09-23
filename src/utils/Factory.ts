@@ -74,25 +74,6 @@ const COFINANCE_FACTORY_ABI = [
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "poolAddress",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "FeeReceived",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
 				"name": "owner",
 				"type": "address"
 			},
@@ -162,29 +143,23 @@ const COFINANCE_FACTORY_ABI = [
 				"internalType": "bool",
 				"name": "isPoolIncentivized",
 				"type": "bool"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "factory",
-				"type": "address"
 			}
 		],
 		"name": "PoolCreated",
 		"type": "event"
 	},
 	{
+		"anonymous": false,
 		"inputs": [
 			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
+				"indexed": true,
+				"internalType": "address",
+				"name": "poolAddress",
+				"type": "address"
 			}
 		],
-		"name": "receiveFees",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
+		"name": "PoolIncentivized",
+		"type": "event"
 	},
 	{
 		"inputs": [
@@ -333,13 +308,19 @@ const COFINANCE_FACTORY_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "maxFeePercent",
-		"outputs": [
+		"inputs": [
 			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
+			}
+		],
+		"name": "incentivizedPoolsList",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
@@ -348,25 +329,6 @@ const COFINANCE_FACTORY_ABI = [
 	{
 		"inputs": [],
 		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "poolByPair",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -402,37 +364,13 @@ const COFINANCE_FACTORY_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "poolsByToken",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
-		"name": "totalFeesReceived",
+		"name": "thisAddress",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "address",
 				"name": "",
-				"type": "uint256"
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
@@ -440,7 +378,7 @@ const COFINANCE_FACTORY_ABI = [
 	}
 ];
 
-const COFINANCE_FACTORY_ADDRESS = '0x1277d444e22110e7950433c7b9c0487b3c0507cc'; 
+const COFINANCE_FACTORY_ADDRESS = '0xee2bf3Aa042C3915190EB9bf50B9EF5ae89565A9'; 
 
 export const createPool = async (
   provider: ethers.BrowserProvider,
@@ -482,18 +420,22 @@ export const getAllPools = async (provider: ethers.BrowserProvider) => {
       throw error;
     }
   };
+
+  export const getIncentivizedPools = async (provider: ethers.BrowserProvider) => {
+    try {
+      const coFinanceFactory = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
+      const pools = await coFinanceFactory.getIncentivizedPools();
+      return pools;
+    } catch (error) {
+      console.error('Error fetching all pools:', error);
+      throw error;
+    }
+  };
   
 
-export const getPoolByPairs = async (provider: ethers.BrowserProvider, tokenA: string, tokenB: string) => {
-    try {
-        const coFinanceFactory = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
-        if (tokenA > tokenB) {
-            [tokenA, tokenB] = [tokenB, tokenA];
-        }
-        const poolAddress = await coFinanceFactory.getPoolByPair(tokenA, tokenB);
-        return poolAddress;
-    } catch (error) {
-        console.error('Error fetching pool by pair:', error);
-        throw error;
-    }
+  export const getPoolByPairs = async (provider, tokenA, tokenB) => {
+    const contract = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
+    const [sortedTokenA, sortedTokenB] = tokenA < tokenB ? [tokenA, tokenB] : [tokenB, tokenA];
+    const poolAddress = await contract.pools(sortedTokenA, sortedTokenB);
+    return poolAddress;
 };

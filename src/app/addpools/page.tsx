@@ -8,17 +8,27 @@ import { createPool } from '../../utils/Factory';
 import { ethers } from 'ethers';
 import { components } from 'react-select';
 
-// Custom styles for React Select
+const promptMetaMaskSign = async (message: string): Promise<string> => {
+  if (!window.ethereum) {
+    throw new Error('MetaMask is not installed');
+  }
+
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const signature = await signer.signMessage(message);
+  return signature;
+};
+
 const customStyles = {
   control: (base) => ({
     ...base,
-    background: 'rgba(0, 0, 0, 0.7)', // Glossy black
+    background: 'rgba(0, 0, 0, 0.7)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
     color: 'white',
   }),
   menu: (base) => ({
     ...base,
-    background: 'rgba(0, 0, 0, 0.7)', // Glossy black
+    background: 'rgba(0, 0, 0, 0.7)',
   }),
   option: (base, { isFocused }) => ({
     ...base,
@@ -40,18 +50,33 @@ const CustomOption = (props) => (
   </components.Option>
 );
 
-const AddPool: React.FC = () => {
-  const [tokenA, setTokenA] = useState(null);
-  const [tokenB, setTokenB] = useState(null);
+function AddPool() {
+  const [tokenA, setTokenA] = useState<{ value: string; label: string; image: string } | null>(null);
+  const [tokenB, setTokenB] = useState<{ value: string; label: string; image: string } | null>(null);
   const [poolName, setPoolName] = useState('');
-  const [priceFeed, setPriceFeed] = useState('');
-  const [rewardToken, setRewardToken] = useState('');
+  const [priceFeed, setPriceFeed] = useState('0xCeF22be4B4209fbDF23330Fd85dA490693B6C8bf'); // Set default price feed
+  const [rewardToken, setRewardToken] = useState<{ value: string; label: string; image: string } | null>(null);
   const [isIncentivized, setIsIncentivized] = useState(false);
   const [tokenOptions, setTokenOptions] = useState(tokens.tokens.map(token => ({
     value: token.address,
     label: token.name,
     image: token.image,
   })));
+
+  const handleAddCustomOption = async (inputValue, setSelectedOption) => {
+    if (ethers.isAddress(inputValue)) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const tokenInfo = await getTokenInfo(provider, inputValue);
+      if (tokenInfo) {
+        setTokenOptions((prevOptions) => [...prevOptions, tokenInfo]);
+        setSelectedOption(tokenInfo);
+      } else {
+        alert('Failed to fetch token info');
+      }
+    } else {
+      alert('Invalid address');
+    }
+  };
 
   const handleAddPool = async () => {
     if (!tokenA || !tokenB || !rewardToken || !priceFeed) {
@@ -68,7 +93,7 @@ const AddPool: React.FC = () => {
         provider,
         tokenA.value,
         tokenB.value,
-        rewardToken,
+        rewardToken.value,
         priceFeed,
         poolName,
         isIncentivized
@@ -97,6 +122,7 @@ const AddPool: React.FC = () => {
             options={tokenOptions}
             value={tokenA}
             onChange={setTokenA}
+            onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setTokenA)}
             styles={customStyles}
             components={{ Option: CustomOption }}
             placeholder="Select or Enter Token A"
@@ -107,6 +133,7 @@ const AddPool: React.FC = () => {
             options={tokenOptions}
             value={tokenB}
             onChange={setTokenB}
+            onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setTokenB)}
             styles={customStyles}
             components={{ Option: CustomOption }}
             placeholder="Select or Enter Token B"
@@ -119,12 +146,16 @@ const AddPool: React.FC = () => {
             placeholder="Price Feed Address"
             className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
           />
-          <input
-            type="text"
+          <CreatableSelect
+            isClearable
+            options={tokenOptions}
             value={rewardToken}
-            onChange={(e) => setRewardToken(e.target.value)}
-            placeholder="Reward Token Address"
-            className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
+            onChange={setRewardToken}
+            onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setRewardToken)}
+            styles={customStyles}
+            components={{ Option: CustomOption }}
+            placeholder="Select or Enter Reward Token"
+            className="w-full"
           />
           <div className="flex items-center mb-4">
             <input

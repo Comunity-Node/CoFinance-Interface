@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Button } from './ui/moving-border';
+import AddLiquidityModal from './inner-page/AddLiquidityModal'; 
+import WithdrawLiquidityModal from './inner-page/WithdrawLiquidityModal'; 
 
 const DEFAULT_IMAGE_URL = '/tokens/CoFi.png';
 
@@ -24,19 +26,21 @@ interface PoolCardProps {
 
 const PoolCard: React.FC<PoolCardProps> = ({ pool }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setWithdrawModalOpen] = useState(false);
 
   const handleButtonClick = () => {
     setMenuOpen(!menuOpen);
   };
 
   const handleAddPool = () => {
-    console.log('Add pool');
-    // Add logic to handle adding the pool
+    setAddModalOpen(true);
+    setMenuOpen(false); 
   };
 
   const handleWithdrawPool = () => {
-    console.log('Withdraw pool');
-    // Add logic to handle withdrawing the pool
+    setWithdrawModalOpen(true);
+    setMenuOpen(false); 
   };
 
   return (
@@ -95,6 +99,18 @@ const PoolCard: React.FC<PoolCardProps> = ({ pool }) => {
           </div>
         )}
       </div>
+      <AddLiquidityModal 
+        open={isAddModalOpen} 
+        onClose={() => setAddModalOpen(false)} 
+        tokenA={pool.tokenA} 
+        tokenB={pool.tokenB} 
+      />
+      <WithdrawLiquidityModal 
+        open={isWithdrawModalOpen} 
+        onClose={() => setWithdrawModalOpen(false)} 
+        tokenA={pool.tokenA} 
+        tokenB={pool.tokenB} 
+      />
     </div>
   );
 };

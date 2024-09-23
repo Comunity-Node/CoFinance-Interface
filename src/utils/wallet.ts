@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+
 export const connectMetaMask = async (): Promise<string | null> => {
   if (typeof window.ethereum !== 'undefined') {
     try {
@@ -13,7 +15,6 @@ export const connectMetaMask = async (): Promise<string | null> => {
   }
 };
 
-// Switches to a specified Ethereum network chain ID
 export const switchChain = async (chainId: string): Promise<void> => {
   if (typeof window.ethereum !== 'undefined') {
     try {
@@ -22,16 +23,15 @@ export const switchChain = async (chainId: string): Promise<void> => {
         params: [{ chainId }],
       });
     } catch (error) {
-      // Handle errors such as user rejecting the switch or the chain not being available
       if (error.code === 4902) {
         console.error('Chain not found. Please add the chain to MetaMask.');
       } else {
-        console.error("Error switching chains:", error);
+        console.error('Error switching chains:', error);
       }
     }
   } else {
-    console.error("MetaMask is not installed.");
-    throw new Error("MetaMask is not installed.");
+    console.error('MetaMask is not installed.');
+    throw new Error('MetaMask is not installed.');
   }
 };
 
@@ -54,6 +54,3 @@ export const signMessage = async (message: string): Promise<string> => {
     throw new Error('MetaMask is not installed');
   }
 };
-
-
-

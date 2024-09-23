@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { getAllPools} from './Factory'
+import { getAllPools, getPoolByPairs} from './Factory'
 
 const COFINANCE_ABI = [
 	{
@@ -47,6 +47,92 @@ const COFINANCE_ABI = [
 		],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "target",
+				"type": "address"
+			}
+		],
+		"name": "AddressEmptyCode",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "AddressInsufficientBalance",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "duration",
+				"type": "uint256"
+			}
+		],
+		"name": "borrowTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "claimFees",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "depositCollateral",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "FailedInnerCall",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "token",
+				"type": "address"
+			}
+		],
+		"name": "SafeERC20FailedOperation",
+		"type": "error"
 	},
 	{
 		"anonymous": false,
@@ -117,7 +203,7 @@ const COFINANCE_ABI = [
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "depositor",
+				"name": "claimer",
 				"type": "address"
 			},
 			{
@@ -127,27 +213,21 @@ const COFINANCE_ABI = [
 				"type": "uint256"
 			}
 		],
-		"name": "IncentiveDeposited",
+		"name": "InterestFeeClaimed",
 		"type": "event"
 	},
 	{
-		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": true,
 				"internalType": "address",
-				"name": "owner",
+				"name": "borrower",
 				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
 			}
 		],
-		"name": "InterestFeeWithdrawn",
-		"type": "event"
+		"name": "liquidateLoan",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -196,25 +276,6 @@ const COFINANCE_ABI = [
 				"type": "uint256"
 			}
 		],
-		"name": "LiquidityTokensMinted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
 		"name": "LiquidityTokensSent",
 		"type": "event"
 	},
@@ -238,23 +299,35 @@ const COFINANCE_ABI = [
 		"type": "event"
 	},
 	{
-		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "staker",
-				"type": "address"
+				"internalType": "uint256",
+				"name": "tokenAAmount",
+				"type": "uint256"
 			},
 			{
-				"indexed": false,
 				"internalType": "uint256",
-				"name": "rewardAmount",
+				"name": "tokenBAmount",
 				"type": "uint256"
 			}
 		],
-		"name": "RewardsClaimed",
-		"type": "event"
+		"name": "provideLiquidity",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "repayLoan",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -262,7 +335,7 @@ const COFINANCE_ABI = [
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "owner",
+				"name": "claimer",
 				"type": "address"
 			},
 			{
@@ -272,8 +345,26 @@ const COFINANCE_ABI = [
 				"type": "uint256"
 			}
 		],
-		"name": "SwapFeeWithdrawn",
+		"name": "SwapFeeClaimed",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "swapTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -292,9 +383,9 @@ const COFINANCE_ABI = [
 			},
 			{
 				"indexed": false,
-				"internalType": "uint256",
-				"name": "tokenBAmount",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			},
 			{
 				"indexed": false,
@@ -304,31 +395,6 @@ const COFINANCE_ABI = [
 			}
 		],
 		"name": "TokensBorrowed",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "staker",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "duration",
-				"type": "uint256"
-			}
-		],
-		"name": "TokensStaked",
 		"type": "event"
 	},
 	{
@@ -363,23 +429,56 @@ const COFINANCE_ABI = [
 		"type": "event"
 	},
 	{
-		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "staker",
-				"type": "address"
-			},
+				"internalType": "uint256",
+				"name": "newShare",
+				"type": "uint256"
+			}
+		],
+		"name": "updateOwnerShare",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
 			{
-				"indexed": false,
+				"internalType": "uint256",
+				"name": "newFee",
+				"type": "uint256"
+			}
+		],
+		"name": "updateSwapFee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
 			}
 		],
-		"name": "TokensUnstaked",
-		"type": "event"
+		"name": "withdrawCollateral",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "liquidityTokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "withdrawLiquidity",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -405,217 +504,6 @@ const COFINANCE_ABI = [
 		],
 		"name": "WithdrawLiquidity",
 		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "APR_14_DAYS",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "APR_21_DAYS",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "APR_7_DAYS",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "INTEREST_RATE",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "MAX_FEE_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "MAX_LTV_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "OWNER_SHARE_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SECONDS_IN_14_DAYS",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SECONDS_IN_21_DAYS",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SECONDS_IN_30_DAYS",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SECONDS_IN_7_DAYS",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SECONDS_IN_90_DAYS",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SWAP_FEE_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "balances",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "duration",
-				"type": "uint256"
-			}
-		],
-		"name": "borrowTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"inputs": [
@@ -650,25 +538,6 @@ const COFINANCE_ABI = [
 				"internalType": "address",
 				"name": "",
 				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "calculateInterest",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -713,37 +582,6 @@ const COFINANCE_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "depositCollateral",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "depositIncentive",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "factory",
 		"outputs": [
@@ -758,16 +596,11 @@ const COFINANCE_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "getTotalLiquidity",
+		"name": "getBorrowedAmount",
 		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "totalA",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalB",
+				"name": "",
 				"type": "uint256"
 			}
 		],
@@ -776,12 +609,80 @@ const COFINANCE_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "interestFeeBalance",
+		"name": "getCollateralAmounts",
 		"outputs": [
 			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getReserves",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "reserveA",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "reserveB",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "INTEREST_RATE_30_DAYS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "INTEREST_RATE_90_DAYS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "isLiquidityProvider",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
@@ -801,11 +702,30 @@ const COFINANCE_ABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "liquidityProviders",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "liquidityToken",
 		"outputs": [
 			{
-				"internalType": "contract LiquidityToken",
+				"internalType": "contract ILiquidityToken",
 				"name": "",
 				"type": "address"
 			}
@@ -866,6 +786,48 @@ const COFINANCE_ABI = [
 	},
 	{
 		"inputs": [],
+		"name": "ownerSharePercent",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "previewSwap",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "outputAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "feeAmount",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "priceFeed",
 		"outputs": [
 			{
@@ -875,37 +837,6 @@ const COFINANCE_ABI = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenAAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenBAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "provideLiquidity",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "repayLoan",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -922,40 +853,21 @@ const COFINANCE_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_factory",
-				"type": "address"
-			}
-		],
-		"name": "setFactory",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
+		"inputs": [],
+		"name": "SECONDS_IN_30_DAYS",
+		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "_percent",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "setMaxFeePercent",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "stakerRewards",
+		"inputs": [],
+		"name": "SECONDS_IN_90_DAYS",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -981,7 +893,7 @@ const COFINANCE_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "swapFeeBalance",
+		"name": "swapFeePercent",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -990,24 +902,6 @@ const COFINANCE_ABI = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "swapTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -1038,7 +932,59 @@ const COFINANCE_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "totalStaked",
+		"name": "totalCollateralA",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalCollateralB",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalLiquidity",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSwapFeesA",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSwapFeesB",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1052,48 +998,84 @@ const COFINANCE_ABI = [
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "userAccumulatedFeesA",
+		"outputs": [
+			{
 				"internalType": "uint256",
-				"name": "amount",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "withdrawCollateral",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "withdrawInterestFee",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "userAccumulatedFeesB",
+		"outputs": [
+			{
 				"internalType": "uint256",
-				"name": "liquidityTokenAmount",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "withdrawLiquidity",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "withdrawSwapFee",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "userInterestFees",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "userLiquidityBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	}
 ];
 export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ totalA: string, totalB: string }> => {
     try {
         const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
-        const [totalA, totalB]: [ethers.BigNumber, ethers.BigNumber] = await contract.getTotalLiquidity();
+        const [totalA, totalB]: [ethers.BigNumber, ethers.BigNumber] = await contract.getReserves();
         return {
             totalA: ethers.formatUnits(totalA),
             totalB: ethers.formatUnits(totalB)
@@ -1119,22 +1101,42 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
   };
   
   export const swapTokens = async (
+		provider: ethers.BrowserProvider,
+		tokenA: string,
+		tokenB: string,
+		tokenAmount: string
+	): Promise<void> => {
+		try {
+			const signer = provider.getSigner();
+			const poolAddress = await getPoolByPairs(provider, tokenA, tokenB);
+			const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
+			console.log(poolAddress);
+			const amount = ethers.parseUnits(tokenAmount, 18); 
+			const tx = await contractWithSigner.swapTokens(poolAddress, amount);
+			await tx.wait();
+			
+			console.log('Tokens swapped:', tokenA, tokenB, tokenAmount);
+		} catch (error) {
+			console.error('Error swapping tokens:', error);
+			throw error;
+		}
+  };
+
+  export const previewSwap = async (
 	provider: ethers.BrowserProvider,
-	poolAddress: string,
 	tokenAddress: string,
-	tokenAmount: string // Amount as a string
-  ): Promise<void> => {
+	tokenAmount: string
+  ): Promise<{ outputAmount: string, feeAmount: string }> => {
 	try {
-	  const signer: Signer = provider.getSigner();
-	  const contractWithSigner = new ethers.Contract("0xc0fC73a294EB0d839261B18EA1e09E59cbd4771F", COFINANCE_ABI, signer);
-	  // Convert tokenAmount to BigNumber with appropriate decimals
-	  const amount = ethers.parseUnits(tokenAmount, 18); // Adjust decimals if needed
-  
-	  const tx = await contractWithSigner.swapTokens("0xc0fC73a294EB0d839261B18EA1e09E59cbd4771F", ethers.parseUnits("100", 18));
-	  await tx.wait();
-	  console.log('Tokens swapped:', tokenAddress, tokenAmount);
+	  const coFinanceAddress = await getAllPools(provider);
+	  const contract = new ethers.Contract(coFinanceAddress, COFINANCE_ABI, provider);
+	  const [outputAmount, feeAmount] = await contract.previewSwap(tokenAddress, ethers.parseUnits(tokenAmount));
+	  return {
+		outputAmount: ethers.formatUnits(outputAmount),
+		feeAmount: ethers.formatUnits(feeAmount),
+	  };
 	} catch (error) {
-	  console.error('Error swapping tokens:', error);
+	  console.error('Error previewing swap:', error);
 	  throw error;
 	}
   };
@@ -1254,4 +1256,15 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
         console.error('Error getting token addresses:', error);
         throw error;
     }
-};
+  };
+
+  export const getLiquidityToken = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ liquidityToken: string }> => {
+    try {
+        const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
+        const liquidityToken = await contract.liquidityToken();
+        return  liquidityToken ;
+    } catch (error) {
+        console.error('Error getting token addresses:', error);
+        throw error;
+    }
+  };
