@@ -1,20 +1,22 @@
 'use client'; // Ensure this file is treated as a client-side component
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '../../components/ui/moving-border';
 import { ethers } from 'ethers';
 import TokenERC20ABI from '../../data/abis/ERC20.json';
-import { useAccount } from '../RootLayout'; 
+import { useAccount } from '../RootLayout';
 import contractAddressesJson from '../../data/tokens.json';
-import { ContractAddresses } from '../../types/ContractAddress'; 
-const { encryptDataField } = require("@swisstronik/utils");
+import { ContractAddresses } from '../../types/ContractAddress';
+import { BsCopy } from "react-icons/bs";
+import { encryptDataField } from "@swisstronik/utils";
+import { MdOutlineArrowOutward } from 'react-icons/md';
 
 const Faucet: React.FC = () => {
-  const { account } = useAccount(); 
+  const { account } = useAccount();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [contractAddresses, setContractAddresses] = useState<ContractAddresses | null>(null);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   useEffect(() => {
     setContractAddresses(contractAddressesJson);
@@ -55,7 +57,8 @@ const Faucet: React.FC = () => {
 
       let addresses: string[] | undefined;
 
-      if (chainId === swisstronikChainId) {
+      const newLocal = chainId === swisstronikChainId;
+      if (newLocal) {
         // Use specific addresses for Swisstronik
         addresses = [
           '0xbe821Cd53a7e6E957F22cC866f6D2Bd42Ab1f18c',
@@ -106,27 +109,55 @@ const Faucet: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-r from-gray-900 via-gray-800 to-black py-12 pt-36">
-      <h1 className="text-lg md:text-7xl text-center font-sans font-bold mb-8 text-white">Request Faucet</h1>
+  const handleCopy = () => {
+    if (account) {
+      navigator.clipboard.writeText(account);
+      setCopySuccess('Copied to clipboard!');
+      setTimeout(() => setCopySuccess(null), 2000);
+    }
+  };
 
-      <div className="flex justify-center mb-12">
-        <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black p-6 rounded-lg shadow-lg w-full max-w-screen-lg">
-          <div className="flex items-center justify-between w-full p-4">
-            <span className="text-white mr-4 truncate">{account ? `Connected: ${account}` : 'Not connected'}</span>
-            <Button
-              onClick={handleRequestFaucet}
-              className={`bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 transition duration-300 text-white py-2 px-4 rounded-lg ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={loading}
-            >
-              {loading ? 'Processing...' : 'Request Faucet'}
-            </Button>
+
+  return (
+    <div className="min-h-screen bg-trade bg-no-repeat bg-contain">
+      <div className="pt-40 space-y-3 flex justify-center">
+        <div className="bg-[#141414] rounded-xl p-4 space-y-6 w-full max-w-2xl">
+          <div className="leading-none">
+            <h1 className="text-3xl font-semibold text-white my-3 text-start">Get The Tokens</h1>
+            <p className='tex-sm font-normal text-gray-400'>Lorem ipsum sit dolor amet.</p>
           </div>
-          {error && <p className="text-red-500 text-center">{error}</p>}
-          {success && <p className="text-green-500 text-center">{success}</p>}
+          <div className="flex justify-center mb-12">
+            <div className="bg-[#292929] rounded-lg shadow-lg w-full max-w-2xl">
+              <div className="relative w-full px-4 py-2">
+                <label className="form-control w-full">
+                  <div className="label">
+                    <span className="label-text">Wallet Address</span>
+                    <span className={`label-text-alt text-${account ? 'green-400' : 'red-500'}`}>{account ? 'Connected' : 'Not Connected'}</span>
+                  </div>
+                  <div className="join">
+                    <input className="input input-bordered join-item w-full placeholder:text-gray-500" value={account || ''} readOnly placeholder={account ? '' : 'Enter Your Wallet Address'} />
+                    <button className={`btn join-item rounded-lg font-normal ${copySuccess ? 'tooltip tooltip-open tooltip-success' : ''}`} data-tip={copySuccess ? 'Copied' : ''} onClick={handleCopy}>
+                      <BsCopy />
+                    </button>
+                  </div>
+                </label>
+                <div className="w-full text-end rounded-lg p-1 my-4 bg-[#bdc3c7]">
+                  <button
+                    onClick={handleRequestFaucet}
+                    className={`btn btn-sm border-0 font-thin text-md bg-transparent hover:bg-transparent text-gray-950 w-full ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={loading}
+                  >
+                    {loading ? 'Processing...' : 'Request Faucet' } <MdOutlineArrowOutward />
+                  </button>
+                </div>
+              </div>
+              {error && <p className="text-red-500 text-center">{error}</p>}
+              {success && <p className="text-green-500 text-center">{success}</p>}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

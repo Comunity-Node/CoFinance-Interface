@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import '@sweetalert2/theme-dark/dark.css';
 import { PiArrowsLeftRightBold } from "react-icons/pi";
-import { MdOutlineArrowOutward } from 'react-icons/md';
+import { MdLocalGasStation, MdOutlineArrowOutward } from 'react-icons/md';
 import { swapTokens, previewSwap } from '@/utils/CoFinance';
 import { getPoolByPairs } from '@/utils/Factory';
 
@@ -46,17 +46,17 @@ const Swap: React.FC = () => {
 
   const fetchPoolAddress = async () => {
     if (fromToken && toToken && provider) {
-        try {
-            console.log("Fetching pool for:", fromToken.value, toToken.value);
-            const address = await getPoolByPairs(provider, fromToken.value, toToken.value);
-            console.log("Fetched pool address:", address);
-            setPoolAddress(address);
-        } catch (error) {
-            console.error('Error fetching pool address:', error);
-            setPoolAddress(null);
-        }
+      try {
+        console.log("Fetching pool for:", fromToken.value, toToken.value);
+        const address = await getPoolByPairs(provider, fromToken.value, toToken.value);
+        console.log("Fetched pool address:", address);
+        setPoolAddress(address);
+      } catch (error) {
+        console.error('Error fetching pool address:', error);
+        setPoolAddress(null);
+      }
     }
-};
+  };
 
   useEffect(() => {
     fetchPoolAddress();
@@ -192,8 +192,8 @@ const Swap: React.FC = () => {
 
           {/* Display pool address */}
           {poolAddress && (
-            <div className="text-gray-400 text-md mt-4">
-              <p>Pool Address: <strong>{poolAddress}</strong></p>
+            <div className="flex items-center justify-between text-gray-500 text-md">
+              <div>Pool Address: <strong>{poolAddress}</strong></div>
             </div>
           )}
 
@@ -216,9 +216,9 @@ const Swap: React.FC = () => {
           </div>
 
           {/* Display estimated output and fee */}
-          <div className="text-gray-400 text-md">
-            <p>Estimated Output: <strong>{toAmount.toFixed(2)}</strong> {toToken?.label}</p>
-            <p>Fee: <strong>{feeAmount.toFixed(2)}</strong></p>
+          <div className="flex items-center justify-between text-gray-500 text-md">
+            <div>Estimated: <strong>{toAmount.toFixed(2)}</strong> {toToken?.label}</div>
+            <div className='flex items-center space-x-1'><MdLocalGasStation /><span>{feeAmount.toFixed(2)}</span></div>
           </div>
         </div>
       </div>

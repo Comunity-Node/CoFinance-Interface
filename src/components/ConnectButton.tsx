@@ -61,7 +61,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ account, setAccount }) =>
 
   return (
     <div className="fixed top-4 right-5 z-50 transition-transform">
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4 py-2">
         <ChainSwitchButton />
         <ButtonGlass onClick={connected ? handleDisconnectWallet : handleConnectMetaMask}>
           <FaWallet className="mr-2" /> {connected ? `${account?.substring(0, 6)}...${account?.substring(account.length - 4)}` : 'Connect Wallet'}
