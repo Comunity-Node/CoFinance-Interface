@@ -435,7 +435,7 @@ export const getAllPools = async (provider: ethers.BrowserProvider) => {
 
   export const getPoolByPairs = async (provider, tokenA, tokenB) => {
     const contract = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
-    const [selectedTokenA, selectedTokenB] = tokenA < tokenB ? [tokenA, tokenB] : [tokenB, tokenA];
-    const poolAddress = await contract.pools(selectedTokenA, selectedTokenB);
+    const [sortedTokenA, sortedTokenB] = tokenA < tokenB ? [tokenA, tokenB] : [tokenB, tokenA];
+    const poolAddress = await contract.pools(sortedTokenA, sortedTokenB);
     return poolAddress;
 };

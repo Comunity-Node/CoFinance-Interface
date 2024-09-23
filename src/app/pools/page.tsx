@@ -27,7 +27,7 @@ function Pools() {
 
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
-        const accountAddress = await signer.getAddress(); // Get connected account
+        const accountAddress = await signer.getAddress();
         setAccount(accountAddress); // Set account state
         console.log("Connected Account:", accountAddress); // Log account
 
@@ -63,8 +63,8 @@ function Pools() {
         getLiquidityToken(provider, address),
       ]);
       const liquidity = await getTotalLiquidity(provider, address);
-      const scaledTotalA = parseFloat(liquidity.totalA) * Math.pow(10, 20);
-      const scaledTotalB = parseFloat(liquidity.totalB) * Math.pow(10, 20);
+      const scaledTotalA = parseFloat(liquidity.totalA);
+      const scaledTotalB = parseFloat(liquidity.totalB);
 
       return {
         address,
@@ -170,10 +170,10 @@ function Pools() {
       <AddLiquidityModal 
         open={addLiquidityModalOpen} 
         onClose={() => setAddLiquidityModalOpen(false)} 
-        tokenA={selectedPool?.tokenA || { label: '', value: '', image: '' }} // Fallback
-        tokenB={selectedPool?.tokenB || { label: '', value: '', image: '' }} // Fallback
-        account={account || ''} // Ensure account is a string
-        poolAddress={selectedPool?.address || ''} // Ensure poolAddress is defined
+        tokenA={selectedPool?.tokenA || { label: '', value: '', image: '' }} 
+        tokenB={selectedPool?.tokenB || { label: '', value: '', image: '' }} 
+        account={account || ''} 
+        poolAddress={selectedPool?.address || ''} 
       />
     </section>
   );

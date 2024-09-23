@@ -1188,27 +1188,25 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
   };
   
   export const provideLiquidity = async (
-	signer: ethers.Signer,
+	provider: ethers.BrowserProvider,
 	poolAddress: string,
 	tokenAAmount: string,
 	tokenBAmount: string
   ): Promise<void> => {
 	try {
+	  const signer = await provider.getSigner();
 	  const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
-  
-	  const parsedTokenAAmount = ethers.parseUnits(tokenAAmount, 18); // Adjust based on actual decimals
-	  const parsedTokenBAmount = ethers.parseUnits(tokenBAmount, 18); // Adjust based on actual decimals
-  
-	  // Send the transaction to the contract
-	  const tx = await contractWithSigner.provideLiquidity(parsedTokenAAmount, parsedTokenBAmount);
-	  await tx.wait(); // Wait for the transaction to be mined
-  
+  	  const parsedTokenAAmount = ethers.parseUnits(tokenAAmount, 18); // Adjust decimals if necessary
+	  const parsedTokenBAmount = ethers.parseUnits(tokenBAmount, 18); // Adjust decimals if necessary
+  	  const tx = await contractWithSigner.provideLiquidity(parsedTokenAAmount, parsedTokenBAmount);
+	  await tx.wait();
 	  console.log('Liquidity provided:', tokenAAmount, tokenBAmount);
 	} catch (error) {
 	  console.error('Error providing liquidity:', error);
-	  throw error;
+	  throw error; 
 	}
   };
+  
   
   export const repayLoan = async (provider: ethers.BrowserProvider, amount: string): Promise<void> => {
     try {

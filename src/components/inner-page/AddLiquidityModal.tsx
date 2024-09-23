@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ImageSelect } from '@/types/ImageSelect';
 import CustomSelectSearch from '@/components/CustomSelectSearch';
 import tokens from '../../data/token.json';
@@ -14,15 +14,6 @@ interface AddLiquidityModalProps {
   tokenB: ImageSelect | null;
 }
 
-const promptMetaMaskSign = async (message: string): Promise<string> => {
-  if (!window.ethereum) {
-    throw new Error('MetaMask is not installed');
-  }
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const signer = await provider.getSigner();
-  const signature = await signer.signMessage(message);
-  return signature;
-};
 
 const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, tokenA, tokenB }) => {
   const [selectedTokenA, setSelectedTokenA] = useState<ImageSelect | null>(tokenA);
@@ -34,7 +25,7 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
   const [poolAddressFromAPI, setPoolAddressFromAPI] = useState<string | null>(null);
   const [account, setAccount] = useState<string | null>(null); 
   const [loading, setLoading] = useState<boolean>(false); 
-
+  const providerRef = useRef<ethers.BrowserProvider | null>(null);
   const defaultTokenOptions = tokens.tokens.map(token => ({
     value: token.address,
     label: token.name,
@@ -46,8 +37,10 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
       setLoading(true);
       try {
         if (!window.ethereum) return;
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
+        if (!providerRef.current) {
+          providerRef.current = new ethers.BrowserProvider(window.ethereum);
+        }
+        const signer = await providerRef.current.getSigner();
         const accountAddress = await signer.getAddress();
         setAccount(accountAddress);
         console.log("Connected Account:", accountAddress);
@@ -68,71 +61,48 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
 
   useEffect(() => {
     const fetchBalances = async () => {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      if (selectedTokenA && account) {
-        const balanceA = await getTokenBalance(provider, selectedTokenA.value, account);
+      if (!providerRef.current || !account) return;
+
+      if (selectedTokenA) {
+        const balanceA = await getTokenBalance(providerRef.current, selectedTokenA.value, account);
         setBalanceA(balanceA);
       }
-      if (selectedTokenB && account) {
-        const balanceB = await getTokenBalance(provider, selectedTokenB.value, account);
+      if (selectedTokenB) {
+        const balanceB = await getTokenBalance(providerRef.current, selectedTokenB.value, account);
         setBalanceB(balanceB);
       }
     };
 
-    if (account) {
-      fetchBalances();
-    }
+    fetchBalances();
   }, [selectedTokenA, selectedTokenB, account]);
 
   useEffect(() => {
     const fetchPool = async () => {
-      if (selectedTokenA && selectedTokenB) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const poolAddress = await getPoolByPairs(provider, selectedTokenA.value, selectedTokenB.value);
-        setPoolAddressFromAPI(poolAddress);
-      }
+      if (!providerRef.current || !selectedTokenA || !selectedTokenB) return;
+
+      const poolAddress = await getPoolByPairs(providerRef.current, selectedTokenA.value, selectedTokenB.value);
+      setPoolAddressFromAPI(poolAddress);
     };
 
     fetchPool();
   }, [selectedTokenA, selectedTokenB]);
 
   const handleConfirm = async () => {
-    if (!account || !selectedTokenA || !selectedTokenB || !poolAddressFromAPI) return;
-  
-    const provider = new ethers.BrowserProvider(window.ethereum);
+    if (!account || !selectedTokenA || !selectedTokenB || !poolAddressFromAPI || !providerRef.current) return;
   
     try {
-      const signer = provider.getSigner();
-      console.log(`Approving ${amountA} ${selectedTokenA.label} for liquidity...`);
-      const txA = await approveToken(signer, selectedTokenA.value, poolAddressFromAPI, ethers.parseUnits(amountA.toString(), 18));
-      await txA.wait(); 
-      console.log(`${amountA} ${selectedTokenA.label} approved for liquidity`);
-
-      const approveMessageA = `I have approved ${amountA} ${selectedTokenA.label} for liquidity.`;
-      const signatureA = await promptMetaMaskSign(approveMessageA);
-      console.log("Token A Approval Signature:", signatureA);
-  
-      console.log(`Approving ${amountB} ${selectedTokenB.label} for liquidity...`);
-      const txB = await approveToken(signer, selectedTokenB.value, poolAddressFromAPI, ethers.parseUnits(amountB.toString(), 18));
-      await txB.wait(); 
-      console.log(`${amountB} ${selectedTokenB.label} approved for liquidity`);
-
-      const approveMessageB = `I have approved ${amountB} ${selectedTokenB.label} for liquidity.`;
-      const signatureB = await promptMetaMaskSign(approveMessageB);
-      console.log("Token B Approval Signature:", signatureB);
-      
-      const message = `I am about to add liquidity: ${amountA} ${selectedTokenA.label} and ${amountB} ${selectedTokenB.label}`;
-      const signature = await promptMetaMaskSign(message);
-      console.log("Signature:", signature);
-  
-      await provideLiquidity(signer, poolAddressFromAPI, amountA.toString(), amountB.toString());
+      await approveToken(providerRef.current, selectedTokenA.value, poolAddressFromAPI, amountA.toString());
+      await approveToken(providerRef.current, selectedTokenB.value, poolAddressFromAPI, amountB.toString());      
+      await provideLiquidity(providerRef.current, poolAddressFromAPI, amountA.toString(), amountB.toString());
       console.log("Liquidity added successfully:", selectedTokenA.label, selectedTokenB.label, amountA, amountB);
-      onClose();
+      alert(`Successfully added liquidity: ${amountA} ${selectedTokenA.label} and ${amountB} ${selectedTokenB.label}`);
+      onClose(); // Close the modal after successful liquidity provision
     } catch (error) {
       console.error('Error during liquidity provision:', error);
     }
   };
   
+
   if (!open) return null;
 
   return (
