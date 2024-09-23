@@ -6,7 +6,7 @@ interface TokenInfo {
   image: string;
 }
 
-export const getTokenInfo = async (provider: ethers.Provider, address: string): Promise<TokenInfo> => {
+export const getTokenInfo = async (provider: ethers.ethers.BrowserProvider, address: string): Promise<TokenInfo> => {
   try {
     const tokenContract = new ethers.Contract(address, [
       "function name() view returns (string)",
@@ -39,7 +39,7 @@ export const getTokenInfo = async (provider: ethers.Provider, address: string): 
   }
 };
 
-export const getTokenBalance = async (provider: ethers.Provider, tokenAddress: string, account: string): Promise<string> => {
+export const getTokenBalance = async (provider: ethers.ethers.BrowserProvider, tokenAddress: string, account: string): Promise<string> => {
   try {
     const tokenContract = new ethers.Contract(tokenAddress, [
       "function balanceOf(address) view returns (uint256)"
@@ -49,6 +49,23 @@ export const getTokenBalance = async (provider: ethers.Provider, tokenAddress: s
     return ethers.formatUnits(balance, 18); 
   } catch (error) {
     console.error('Error fetching token balance:', error);
-    return '0'; // Return '0' on error
+    return '0'; 
   }
 };
+
+export const approveToken = async (provider: ethers.ethers.BrowserProvider, tokenAddress: string, spender: string, amount: string): Promise<void> => {
+  try {
+    const signer = await provider.getSigner();
+    const tokenContract = new ethers.Contract(tokenAddress, [
+      "function approve(address spender, uint256 amount) returns (bool)"
+    ], signer);
+
+    const tx = await tokenContract.approve(spender, ethers.parseUnits(amount, 18));
+    await tx.wait();
+    console.log(`Approved ${amount} tokens for spender: ${spender}`);
+  } catch (error) {
+    console.error('Error approving token:', error);
+    throw error;
+  }
+};
+

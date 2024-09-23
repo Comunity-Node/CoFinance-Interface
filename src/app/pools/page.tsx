@@ -98,7 +98,7 @@ function Pools() {
       return;
     }
     setSelectedPool(pool);
-    setAddLiquidityModalOpen(true); // Open modal after setting selectedPool
+    setAddLiquidityModalOpen(true); 
   };
 
   const handleWithdrawClick = (pool) => {
@@ -114,10 +114,6 @@ function Pools() {
           <h2 className="text-4xl font-bold text-white">Pools Overview</h2>
           <Button onClick={() => window.location.href = '/addpools'}>Add New Pool</Button>
         </div>
-
-        {/* Display Connected Account */}
-        {account && <p className="text-gray-300 mb-4">Connected Account: {account}</p>}
-
         {loading ? (
           <p className="text-center text-white">Loading...</p>
         ) : (

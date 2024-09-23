@@ -3,26 +3,37 @@ import { ImageSelect } from '@/types/ImageSelect';
 import CustomSelectSearch from '@/components/CustomSelectSearch';
 import tokens from '../../data/token.json';
 import { ethers } from 'ethers';
-import { getTokenBalance } from '../../utils/TokenUtils';
-import { getPoolByPairs } from '../../utils/Factory';
+import { getTokenBalance, approveToken } from '../../utils/TokenUtils';
+import { getPoolByPairs } from '../../utils/Factory'; 
+import { provideLiquidity } from '../../utils/CoFinance';
 
 interface AddLiquidityModalProps {
   open: boolean;
   onClose: () => void;
   tokenA: ImageSelect | null;
   tokenB: ImageSelect | null;
-  account: string; 
-  poolAddress: string;
 }
 
-const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, tokenA, tokenB, account, poolAddress }) => {
+const promptMetaMaskSign = async (message: string): Promise<string> => {
+  if (!window.ethereum) {
+    throw new Error('MetaMask is not installed');
+  }
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const signature = await signer.signMessage(message);
+  return signature;
+};
+
+const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, tokenA, tokenB }) => {
   const [selectedTokenA, setSelectedTokenA] = useState<ImageSelect | null>(tokenA);
   const [selectedTokenB, setSelectedTokenB] = useState<ImageSelect | null>(tokenB);
   const [amountA, setAmountA] = useState<number>(0);
   const [amountB, setAmountB] = useState<number>(0);
   const [balanceA, setBalanceA] = useState<string>('0');
   const [balanceB, setBalanceB] = useState<string>('0');
-  const [poolAddressFromAPI, setPoolAddressFromAPI] = useState<string | null>(null); // Store single pool address
+  const [poolAddressFromAPI, setPoolAddressFromAPI] = useState<string | null>(null);
+  const [account, setAccount] = useState<string | null>(null); 
+  const [loading, setLoading] = useState<boolean>(false); 
 
   const defaultTokenOptions = tokens.tokens.map(token => ({
     value: token.address,
@@ -31,8 +42,24 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
   }));
 
   useEffect(() => {
-    console.log("Props in Modal:", { open, account, poolAddress });
-  }, [open, account, poolAddress]);
+    const loadAccountAndPools = async () => {
+      setLoading(true);
+      try {
+        if (!window.ethereum) return;
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const accountAddress = await signer.getAddress();
+        setAccount(accountAddress);
+        console.log("Connected Account:", accountAddress);
+      } catch (error) {
+        console.error('Error loading account and pools:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAccountAndPools();
+  }, []);
 
   useEffect(() => {
     setSelectedTokenA(tokenA);
@@ -42,13 +69,11 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
   useEffect(() => {
     const fetchBalances = async () => {
       const provider = new ethers.BrowserProvider(window.ethereum);
-
-      if (selectedTokenA) {
+      if (selectedTokenA && account) {
         const balanceA = await getTokenBalance(provider, selectedTokenA.value, account);
         setBalanceA(balanceA);
       }
-
-      if (selectedTokenB) {
+      if (selectedTokenB && account) {
         const balanceB = await getTokenBalance(provider, selectedTokenB.value, account);
         setBalanceB(balanceB);
       }
@@ -64,31 +89,59 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
       if (selectedTokenA && selectedTokenB) {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const poolAddress = await getPoolByPairs(provider, selectedTokenA.value, selectedTokenB.value);
-        setPoolAddressFromAPI(poolAddress); 
+        setPoolAddressFromAPI(poolAddress);
       }
     };
 
     fetchPool();
   }, [selectedTokenA, selectedTokenB]);
 
-  if (!open) return null;
+  const handleConfirm = async () => {
+    if (!account || !selectedTokenA || !selectedTokenB || !poolAddressFromAPI) return;
+  
+    const provider = new ethers.BrowserProvider(window.ethereum);
+  
+    try {
+      const signer = provider.getSigner();
+      console.log(`Approving ${amountA} ${selectedTokenA.label} for liquidity...`);
+      const txA = await approveToken(signer, selectedTokenA.value, poolAddressFromAPI, ethers.parseUnits(amountA.toString(), 18));
+      await txA.wait(); 
+      console.log(`${amountA} ${selectedTokenA.label} approved for liquidity`);
 
-  const handleConfirm = () => {
-    console.log("Adding liquidity:", selectedTokenA, selectedTokenB, amountA, amountB);
-    onClose();
+      const approveMessageA = `I have approved ${amountA} ${selectedTokenA.label} for liquidity.`;
+      const signatureA = await promptMetaMaskSign(approveMessageA);
+      console.log("Token A Approval Signature:", signatureA);
+  
+      console.log(`Approving ${amountB} ${selectedTokenB.label} for liquidity...`);
+      const txB = await approveToken(signer, selectedTokenB.value, poolAddressFromAPI, ethers.parseUnits(amountB.toString(), 18));
+      await txB.wait(); 
+      console.log(`${amountB} ${selectedTokenB.label} approved for liquidity`);
+
+      const approveMessageB = `I have approved ${amountB} ${selectedTokenB.label} for liquidity.`;
+      const signatureB = await promptMetaMaskSign(approveMessageB);
+      console.log("Token B Approval Signature:", signatureB);
+      
+      const message = `I am about to add liquidity: ${amountA} ${selectedTokenA.label} and ${amountB} ${selectedTokenB.label}`;
+      const signature = await promptMetaMaskSign(message);
+      console.log("Signature:", signature);
+  
+      await provideLiquidity(signer, poolAddressFromAPI, amountA.toString(), amountB.toString());
+      console.log("Liquidity added successfully:", selectedTokenA.label, selectedTokenB.label, amountA, amountB);
+      onClose();
+    } catch (error) {
+      console.error('Error during liquidity provision:', error);
+    }
   };
+  
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
       <div className="bg-[#141414] p-6 rounded-xl max-w-lg w-full h-auto overflow-auto">
         <h2 className="text-3xl font-semibold text-white mb-6 text-center">Add Liquidity</h2>
-
-        <p className="text-gray-300 mb-2">Connected Account: {account}</p>
-        <p className="text-gray-300 mb-4">Pool Address: {poolAddressFromAPI || 'Fetching...'}</p>
-
         <form onSubmit={(e) => { e.preventDefault(); handleConfirm(); }}>
           <div className="mb-4">
-            <p className="text-gray-500 text-md uppercase">Select Token A:</p>
+            <p className="text-gray-500 text-md uppercase">Token A:</p>
             <CustomSelectSearch
               tokenOptions={defaultTokenOptions}
               handleOnChange={setSelectedTokenA}
@@ -96,7 +149,7 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
               className="border-none hover:border-0"
               placeholder="Choose Token A"
             />
-            <p className="text-gray-300">Balance: {balanceA}</p>
+            <p className="text-gray-300">Available Balance: {balanceA}</p>
             <input 
               type="number" 
               value={amountA || ''}
@@ -106,7 +159,7 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
             />
           </div>
           <div className="mb-4">
-            <p className="text-gray-500 text-md uppercase">Select Token B:</p>
+            <p className="text-gray-500 text-md uppercase">Token B:</p>
             <CustomSelectSearch
               tokenOptions={defaultTokenOptions}
               handleOnChange={setSelectedTokenB}
@@ -114,7 +167,7 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
               className="border-none hover:border-0"
               placeholder="Choose Token B"
             />
-            <p className="text-gray-300">Balance: {balanceB}</p>
+            <p className="text-gray-300">Available Balance: {balanceB}</p>
             <input 
               type="number" 
               value={amountB || ''}
@@ -122,10 +175,6 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
               placeholder={`Amount of ${selectedTokenB?.label || 'Token B'}`}
               className="border border-gray-600 bg-transparent text-white p-2 rounded-xl w-full mt-2 focus:outline-none focus:border-blue-500" 
             />
-          </div>
-          <div className="mb-4">
-            <p className="text-gray-500 text-md uppercase">Available Pool:</p>
-            <p className="text-gray-300">{poolAddressFromAPI ? poolAddressFromAPI : 'No pool available for this pair'}</p>
           </div>
           <div className="flex justify-between mt-6">
             <button 
