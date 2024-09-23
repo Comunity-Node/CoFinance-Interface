@@ -64,6 +64,7 @@ const config: Config = {
         'choose-us': 'url(/redesign/Sphere.png)',
         'borrow': 'url(/redesign/Helix.png)',
         'trade': 'url(/redesign/Trade.png)',
+        'faucet': 'url(/redesign/Faucet.png)',
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",

@@ -86,6 +86,12 @@ const Swap: React.FC = () => {
         icon: 'warning',
         title: 'Token Selection',
         text: 'Please select both From and To tokens and ensure a valid pool exists.',
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+        confirmButtonText: 'Close',
       });
       return;
     }
@@ -95,6 +101,12 @@ const Swap: React.FC = () => {
         icon: 'warning',
         title: 'Invalid Amount',
         text: 'Please enter a valid amount to swap.',
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+        confirmButtonText: 'Close',
       });
       return;
     }
@@ -121,12 +133,24 @@ const Swap: React.FC = () => {
             <strong>$${toAmount}</strong>
           </div>
         `,
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+        confirmButtonText: 'Close',
       });
     } catch (error) {
       MySwal.fire({
         icon: 'error',
         title: 'Swap Failed',
         text: 'An error occurred while swapping tokens.',
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+        confirmButtonText: 'Close',
       });
     } finally {
       setIsSwap(false);

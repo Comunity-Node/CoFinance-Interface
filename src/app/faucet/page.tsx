@@ -9,6 +9,11 @@ import { ContractAddresses } from '../../types/ContractAddress';
 import { BsCopy } from "react-icons/bs";
 import { encryptDataField } from "@swisstronik/utils";
 import { MdOutlineArrowOutward } from 'react-icons/md';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import '@sweetalert2/theme-dark/dark.css'; // Import the dark theme
+
+const MySwal = withReactContent(Swal);
 
 const Faucet: React.FC = () => {
   const { account } = useAccount();
@@ -24,7 +29,19 @@ const Faucet: React.FC = () => {
 
   const promptMetaMaskSign = async (message: string): Promise<string> => {
     if (!window.ethereum) {
-      throw new Error('MetaMask is not installed');
+      // throw new Error('MetaMask is not installed');
+      MySwal.fire({
+        icon: 'error',
+        title: 'Wallet Connect',
+        text: 'MetaMask is not installed',
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+        confirmButtonText: 'Close',
+      });
+      return;
     }
 
     // Initialize provider and signer
@@ -39,7 +56,17 @@ const Faucet: React.FC = () => {
 
   const handleRequestFaucet = async () => {
     if (!account) {
-      setError('Please connect your wallet first');
+      MySwal.fire({
+        icon: 'error',
+        title: 'Wallet Connect',
+        text: 'Please connect your wallet first',
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+        confirmButtonText: 'Close',
+      });
       return;
     }
 
@@ -70,7 +97,18 @@ const Faucet: React.FC = () => {
       }
 
       if (!addresses || addresses.length === 0) {
-        throw new Error('No contract addresses for the current chain ID');
+        // throw new Error('No contract addresses for the current chain ID');
+        MySwal.fire({
+          icon: 'error',
+          title: 'Failed to Request Faucet!',
+          text: 'No contract addresses for the current chain ID',
+          customClass: {
+            popup: 'my-custom-popup',
+            confirmButton: 'my-custom-confirm-button',
+            cancelButton: 'my-custom-cancel-button',
+          },
+          confirmButtonText: 'Close',
+        });
       }
 
       // Initialize signer
@@ -101,9 +139,31 @@ const Faucet: React.FC = () => {
         txHashes.push(txResponse.hash);
       }
 
-      setSuccess(`Transactions successful! Tx Hashes: ${txHashes.join(', ')}`);
+      // setSuccess(`Transactions successful! Tx Hashes: ${txHashes.join(', ')}`);
+      MySwal.fire({
+        icon: 'success',
+        title: 'Transactions Successfully!',
+        text: `Tx Hashes: ${txHashes.join(', ')}`,
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+        confirmButtonText: 'Close',
+      });
     } catch (error) {
-      setError(`Failed to request faucet: ${(error as Error).message}`);
+      // setError(`Failed to request faucet: ${(error as Error).message}`);
+      MySwal.fire({
+        icon: 'error',
+        title: 'Failed to Request Faucet!',
+        text: `${(error as Error).message}`,
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+        confirmButtonText: 'Close',
+      });
     } finally {
       setLoading(false);
     }
@@ -119,7 +179,7 @@ const Faucet: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-trade bg-no-repeat bg-contain">
+    <div className="min-h-screen bg-faucet bg-no-repeat bg-contain">
       <div className="pt-40 space-y-3 flex justify-center">
         <div className="bg-[#141414] rounded-xl p-4 space-y-6 w-full max-w-2xl">
           <div className="leading-none">
@@ -147,7 +207,7 @@ const Faucet: React.FC = () => {
                     className={`btn btn-sm border-0 font-thin text-md bg-transparent hover:bg-transparent text-gray-950 w-full ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     disabled={loading}
                   >
-                    {loading ? 'Processing...' : 'Request Faucet' } <MdOutlineArrowOutward />
+                    {loading ? 'Processing...' : 'Request Faucet'} <MdOutlineArrowOutward />
                   </button>
                 </div>
               </div>
