@@ -6,10 +6,11 @@ import { ImageSelect } from '@/types/ImageSelect';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { ethers } from 'ethers';
-import { getTokenBalance, approveToken } from '../../utils/TokenUtils';
-import { getPoolByPairs } from '../../utils/Factory'; 
-import { depositCollateral } from '../../utils/CoFinance';
+import { getTokenBalance, approveToken } from '@/utils/TokenUtils';
+import { getPoolByPairs } from '@/utils/Factory';
+import { depositCollateral } from '@/utils/CoFinance';
 import '@sweetalert2/theme-dark/dark.css';
+import { CiWallet } from 'react-icons/ci';
 
 const MySwal = withReactContent(Swal);
 
@@ -17,21 +18,18 @@ interface CollateralProps {
     tokenOptions?: ImageSelect[];
     borrowedTokenOptions?: ImageSelect[];
     handleDepositCollateral: (amount: number, poolAddress: string) => Promise<{ amount: number }>;
+    account: string;
+    provider: ethers.BrowserProvider;
 }
 
-const Collateral: React.FC<CollateralProps> = ({
-    tokenOptions = [],
-    borrowedTokenOptions = [],
-    handleDepositCollateral,
-}) => {
+const Collateral: React.FC<CollateralProps> = ({ tokenOptions = [], borrowedTokenOptions = [], handleDepositCollateral, account, provider }) => {
     const [selectedDepositToken, setSelectedDepositToken] = useState<ImageSelect | null>(null);
     const [selectedBorrowedToken, setSelectedBorrowedToken] = useState<ImageSelect | null>(null);
     const [collateralAmount, setCollateralAmount] = useState<number>(0);
     const [userBalance, setUserBalance] = useState<string>('0');
-    const [account, setAccount] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [poolAddress, setPoolAddress] = useState<string>(''); // Initialize as an empty string
-    const providerRef = useRef<ethers.BrowserProvider | null>(null);
+    const [poolAddress, setPoolAddress] = useState<string>('');
+    // const providerRef = useRef<ethers.BrowserProvider | null>(provider || null);
 
     const defaultTokenOptions = tokenOptions.length > 0 ? tokenOptions : tokens.tokens.map(token => ({
         value: token.address,
@@ -45,32 +43,53 @@ const Collateral: React.FC<CollateralProps> = ({
         image: token.image,
     }));
 
-    useEffect(() => {
-        const loadAccount = async () => {
-            setLoading(true);
-            try {
-                if (!window.ethereum) return;
-                if (!providerRef.current) {
-                    providerRef.current = new ethers.BrowserProvider(window.ethereum);
-                }
-                const signer = await providerRef.current.getSigner();
-                const accountAddress = await signer.getAddress();
-                setAccount(accountAddress);
-                fetchBalance(accountAddress);
-            } catch (error) {
-                console.error('Error loading account:', error);
-            } finally {
-                setLoading(false);
+    const loadAccount = async () => {
+        setLoading(true);
+        try {
+            if (!window.ethereum) {
+                await MySwal.fire({
+                    title: 'Wallet not found!',
+                    text: 'Please install MetaMask or another Ethereum wallet.',
+                    icon: 'warning',
+                    customClass: {
+                        popup: 'my-custom-popup',
+                        confirmButton: 'my-custom-confirm-button',
+                        cancelButton: 'my-custom-cancel-button',
+                    },
+                    confirmButtonText: 'Close',
+                });
+                return;
             }
-        };
 
-        loadAccount();
-    }, []);
+            if (!provider) {
+                provider = new ethers.BrowserProvider(window.ethereum);
+            }
+
+            const signer = await provider.getSigner();
+            const accountAddress = await signer.getAddress();
+            fetchBalance(accountAddress);
+        } catch (error) {
+            console.error('Error loading account:', error);
+            await MySwal.fire({
+                title: 'Error loading account!',
+                text: 'Could not load your account information.',
+                icon: 'error',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
+                confirmButtonText: 'Close',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchBalance = async (account: string) => {
-        if (!providerRef.current || !selectedDepositToken) return;
+        if (!provider || !selectedDepositToken) return;
 
-        const balance = await getTokenBalance(providerRef.current, selectedDepositToken.value, account);
+        const balance = await getTokenBalance(provider, selectedDepositToken.value, account);
         setUserBalance(balance);
     };
 
@@ -82,10 +101,10 @@ const Collateral: React.FC<CollateralProps> = ({
 
     useEffect(() => {
         const fetchPool = async () => {
-            if (!providerRef.current || !selectedDepositToken || !selectedBorrowedToken) return;
+            if (!provider || !selectedDepositToken || !selectedBorrowedToken) return;
 
-            const fetchedPoolAddress = await getPoolByPairs(providerRef.current, selectedDepositToken.value, selectedBorrowedToken.value);
-            setPoolAddress(fetchedPoolAddress || ''); // Set pool address or empty string if null
+            const fetchedPoolAddress = await getPoolByPairs(provider, selectedDepositToken.value, selectedBorrowedToken.value);
+            setPoolAddress(fetchedPoolAddress || '');
         };
 
         fetchPool();
@@ -97,15 +116,20 @@ const Collateral: React.FC<CollateralProps> = ({
                 title: 'Error!',
                 text: 'Please select a deposit token, enter a valid amount, select a token to borrow, and choose a pool.',
                 icon: 'error',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
                 confirmButtonText: 'Close',
             });
             return;
         }
-    
+
         try {
-            await approveToken(providerRef.current, selectedDepositToken.value, poolAddress, collateralAmount.toString());
-            const result = await depositCollateral(providerRef.current, poolAddress, selectedDepositToken.value, collateralAmount.toString());
-    
+            await approveToken(provider, selectedDepositToken.value, poolAddress, collateralAmount.toString());
+            await depositCollateral(provider, poolAddress, selectedDepositToken.value, collateralAmount.toString());
+
             await MySwal.fire({
                 title: 'Deposit Successfully!',
                 html: `
@@ -115,28 +139,54 @@ const Collateral: React.FC<CollateralProps> = ({
                 </div>
                 `,
                 icon: 'success',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
                 confirmButtonText: 'Close',
             });
-    
-            fetchBalance(account); 
+
+            fetchBalance(account);
         } catch (error) {
             console.error('Error during deposit:', error);
             await MySwal.fire({
                 title: 'Error!',
                 text: 'There was a problem with the deposit or approval.',
                 icon: 'error',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
                 confirmButtonText: 'Close',
             });
         }
     };
-    
-    
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseFloat(e.target.value);
+        if (value >= 0) {
+            setCollateralAmount(value);
+        } else {
+            setCollateralAmount(0);
+        }
+    };
+
+
     if (loading) {
-        return <div className="loading">Loading...</div>; // Loading state
+        return <div className="loading">Loading...</div>;
     }
 
     return (
         <div className='space-y-4 py-4 h-full'>
+            <div className="flex items-center justify-between px-5">
+                <p className='text-gray-500 text-md uppercase'></p>
+                <div className="flex items-center">
+                    <CiWallet />
+                    <p className="text-gray-500 text-lg ms-2"> <strong>{userBalance}</strong></p>
+                </div>
+            </div>
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
                     tokenOptions={defaultTokenOptions}
@@ -145,15 +195,16 @@ const Collateral: React.FC<CollateralProps> = ({
                     className="border-none hover:border-0"
                     placeholder="Select deposit token"
                 />
-                <input
-                    type="number"
-                    value={collateralAmount || ''}
-                    onChange={(e) => setCollateralAmount(parseFloat(e.target.value))}
-                    placeholder="0"
-                    className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
-                />
-                <div className="text-white">
-                    Balance: {userBalance}
+                <div className="space-y-2 w-full">
+                    <input
+                        type="tel"
+                        value={collateralAmount || ''}
+                        onChange={handleInputChange}
+                        placeholder="0"
+                        className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
+                    />
+                    <input type="range" min={0} max={parseFloat(userBalance) == 0 ? 100 : userBalance} value={collateralAmount || ''}
+                        onChange={handleInputChange} className="range range-xs" />
                 </div>
             </div>
 
@@ -181,10 +232,8 @@ const Collateral: React.FC<CollateralProps> = ({
                     Deposit <MdOutlineArrowOutward />
                 </button>
             </div>
-            <button onClick={() => window.ethereum.request({ method: 'eth_requestAccounts' })} className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full">
-                Connect Wallet
-            </button>
-        </div>
+
+        </div >
     );
 };
 

@@ -2,15 +2,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Drawer from '@/components/Drawer';
 import Collateral from '@/components/inner-page/Collateral';
-import BorrowTokens from '@/components/inner-page/BorrowTokens'; 
+import BorrowTokens from '@/components/inner-page/BorrowTokens';
 import tokens from '@/data/token.json';
 import durationsData from '@/data/durations.json';
 import { ethers } from 'ethers';
-import { getUserCollateralBalances } from '../../utils/CoFinance';
+import { getUserCollateralBalances } from '@/utils/CoFinance';
+import { useAccount } from '../RootLayout';
+import ConnectButton from '@/components/ConnectButton';
+import { FaWallet } from 'react-icons/fa';
+import { connectMetaMask } from '@/utils/wallet';
 
 const Borrow: React.FC = () => {
-  const [account, setAccount] = useState<string | null>(null);
-  const [collateralBalance, setCollateralBalance] = useState<number>(0); 
+  const { account, setAccount } = useAccount();
+  const [connected, setConnected] = React.useState<boolean>(!!account);
+  const [collateralBalance, setCollateralBalance] = useState<number>(0);
   const providerRef = useRef<ethers.BrowserProvider | null>(null);
 
   const tabsBorrow = [
@@ -26,7 +31,8 @@ const Borrow: React.FC = () => {
           handleDepositCollateral={async (amount) => {
             return { amount: 0 };
           }}
-        />
+          account={account || ''}
+          provider={providerRef.current as ethers.BrowserProvider} />
       ),
     },
     {
@@ -45,7 +51,8 @@ const Borrow: React.FC = () => {
           handleBorrowAmounts={async (amount) => {
             return { amount: 0 };
           }}
-        />
+          account={account || ''}
+          provider={providerRef.current as ethers.BrowserProvider} />
       ),
     },
   ];
@@ -64,12 +71,12 @@ const Borrow: React.FC = () => {
 
   useEffect(() => {
     const loadAccount = async () => {
-      if (!window.ethereum) return;
+      if (!window.ethereum || null) return;
 
       providerRef.current = new ethers.BrowserProvider(window.ethereum);
       const signer = await providerRef.current.getSigner();
       const accountAddress = await signer.getAddress();
-      setAccount(accountAddress);
+      setAccount(accountAddress); // Set account here properly
     };
 
     loadAccount();
@@ -79,7 +86,52 @@ const Borrow: React.FC = () => {
     if (account) {
       fetchCollateralBalance();
     }
+    console.log("Account Fetch : " + account);
   }, [account]);
+
+
+  const handleConnectMetaMask = async () => {
+    try {
+      const address = await connectMetaMask();
+      if (address) {
+        console.log(address);
+        setAccount(address);
+        setConnected(true);
+      } else {
+        console.error("Failed to connect MetaMask.");
+      }
+    } catch (err) {
+      console.error("Failed to connect MetaMask:", err);
+    }
+  };
+
+  const handleDisconnectWallet = () => {
+    setAccount(null);
+    setConnected(false);
+  };
+
+  // Fix the CardConnectButton with return statement
+  const CardConnectButton = () => (
+    <div className="absolute text-center justify-center flex items-center z-50 mx-auto my-5" data-aos="fade-up">
+      <div className=' card card-compact bg-[#141414] w-96 shadow-xl'>
+        <figure>
+          <img className='bg-cover w-full '
+            src="/redesign/Connect.png"
+            alt="Shoes" />
+        </figure>
+        <div className="card-body space-y-3">
+          <p>Please connect your wallet to use the platform features.</p>
+          <div className="card-actions justify-end">
+            <div className="w-full text-end rounded-lg p-1 bg-[#bdc3c7]">
+              <button onClick={connected ? handleDisconnectWallet : handleConnectMetaMask} className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full">
+                <FaWallet className="mr-2" /> Connect Wallet
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <section className="min-h-screen animation-bounce bg-borrow bg-no-repeat bg-contain image-full text-center max-w-screen">
@@ -87,7 +139,7 @@ const Borrow: React.FC = () => {
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center justify-between rounded-xl w-full px-10 bg-explore py-5">
             <div className="text-start">
-              <p className="text-4xl font-bold text-white">${collateralBalance.toLocaleString()}</p> {/* Changed to collateralBalance */}
+              <p className="text-4xl font-bold text-white">${collateralBalance.toLocaleString()}</p>
             </div>
             <div className="text-end" data-aos="fade-left">
               <p className='text-gray-600 text-md uppercase'>Your Deposited Collateral</p>
@@ -111,14 +163,18 @@ const Borrow: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-[#141414] rounded-xl h-full px-10 py-5 space-y-3">
-          <Drawer
-            drawerItems={tabsBorrow}
-            title='Borrow Tokens'
-            classParent='bg-transparent border border-[#bdc3c7] rounded-lg p-1 z-50'
-            classActiveTab="bg-[#bdc3c7] font-normal text-[#141414] w-full py-2 px-4 rounded-md text-center"
-            classDeactiveTab='py-2 px-4 rounded-md font-normal text-[#141414] text-center text-white w-full'
-          />
+
+        <div className={`bg-[#141414] rounded-xl h-full flex items-center justify-center`}>
+          {account ? null : <CardConnectButton />}
+          <div className={`bg-[#141414] rounded-xl h-full px-10 py-5 w-full space-y-3 ${account == null ? 'blur-lg' : ''}`}>
+            <Drawer
+              drawerItems={tabsBorrow}
+              title='Borrow Tokens'
+              classParent='bg-transparent border border-[#bdc3c7] rounded-lg p-1 z-50'
+              classActiveTab="bg-[#bdc3c7] font-normal text-[#141414] w-full py-2 px-4 rounded-md text-center"
+              classDeactiveTab='py-2 px-4 rounded-md font-normal text-[#141414] text-center text-white w-full'
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -126,3 +182,7 @@ const Borrow: React.FC = () => {
 };
 
 export default Borrow;
+function loadAccount() {
+  throw new Error('Function not implemented.');
+}
+

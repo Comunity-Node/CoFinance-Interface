@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import TokenERC20ABI from '../../data/abis/ERC20.json';
+import TokenERC20ABI from '@/data/abis/ERC20.json';
 import { useAccount } from '../RootLayout';
-import contractAddressesJson from '../../data/tokens.json';
-import { ContractAddresses } from '../../types/ContractAddress';
+import contractAddressesJson from '@/data/tokens.json';
+import { ContractAddresses } from '@/types/ContractAddress';
 import { BsCopy } from "react-icons/bs";
 import { encryptDataField } from "@swisstronik/utils";
 import { MdOutlineArrowOutward } from 'react-icons/md';
@@ -41,7 +41,6 @@ const Faucet: React.FC = () => {
         },
         confirmButtonText: 'Close',
       });
-      return;
     }
 
     // Initialize provider and signer
@@ -84,7 +83,7 @@ const Faucet: React.FC = () => {
 
       let addresses: string[] | undefined;
 
-      const newLocal = chainId === swisstronikChainId;
+      const newLocal = chainId === BigInt(swisstronikChainId);
       if (newLocal) {
         // Use specific addresses for Swisstronik
         addresses = [
@@ -211,8 +210,8 @@ const Faucet: React.FC = () => {
                   </button>
                 </div>
               </div>
-              {error && <p className="text-red-500 text-center">{error}</p>}
-              {success && <p className="text-green-500 text-center">{success}</p>}
+              {/* {error && <p className="text-red-500 text-center">{error}</p>} */}
+              {/* {success && <p className="text-green-500 text-center">{success}</p>} */}
             </div>
           </div>
         </div>

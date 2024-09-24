@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../../components/ui/moving-border';
-import { SigningStargateClient, OfflineSigner, StdFee } from '@cosmjs/stargate';
+import { SigningStargateClient, StdFee } from '@cosmjs/stargate';
 import { sign } from '../../utils/ethermint';
 import validatorsData from '../../data/validator.json'; 
 import axios from 'axios';
@@ -48,8 +48,8 @@ function TokenStake() {
           const accountBalance = await client.getBalance(account.address, denom );
           console.log(accountBalance)
           setBalance(accountBalance.amount);
-        } catch (err) {
-          setError(`Failed to fetch balance: ${err.message}`);
+        } catch (error) {
+          setError(`Failed to fetch balance: ${error.message}`);
         }
       }
     };

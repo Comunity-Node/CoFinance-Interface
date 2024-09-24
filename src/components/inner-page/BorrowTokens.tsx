@@ -8,8 +8,8 @@ import { SelectList } from '@/types/SelectList';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { ethers } from 'ethers';
-import { getUserCollateralBalances } from '../../utils/CoFinance'; 
-import { getPoolByPairs } from '../../utils/Factory';
+import { getUserCollateralBalances } from '@/utils/CoFinance';
+import { getPoolByPairs } from '@/utils/Factory';
 import '@sweetalert2/theme-dark/dark.css';
 
 const MySwal = withReactContent(Swal);
@@ -43,9 +43,11 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
         label: item.label,
     }));
 
+    // Ensure account is a valid string before using it
     useEffect(() => {
+        if (!account || !provider) return;
+
         const fetchCollateralBalances = async () => {
-            if (!account || !provider) return;
             try {
                 const balances = await getUserCollateralBalances(provider, account);
                 const options: ImageSelect[] = [];
@@ -55,11 +57,12 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                     const { collateralA, collateralB } = balances[pool];
                     if (collateralA || collateralB) {
                         pools.push({ value: pool, label: `Pool ${pool}` });
+                        const tokenImage = tokens.tokens.find(token => token.address === pool)?.image || '/analitycs-bg.svg'; // Provide a default image or empty string if undefined
                         if (collateralA) {
-                            options.push({ value: pool, label: `Collateral A (${collateralA})`, image: tokens.tokens.find(token => token.address === pool)?.image });
+                            options.push({ value: pool, label: `Collateral A (${collateralA})`, image: tokenImage });
                         }
                         if (collateralB) {
-                            options.push({ value: pool, label: `Collateral B (${collateralB})`, image: tokens.tokens.find(token => token.address === pool)?.image });
+                            options.push({ value: pool, label: `Collateral B (${collateralB})`, image: tokenImage });
                         }
                     }
                 }
@@ -78,8 +81,8 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
         setSelectedPool(selectedOption?.value || null);
         setSelectedCollateralToken(null);
 
-        if (selectedOption) {
-            const poolAddress = await getPoolByPairs(provider, selectedBorrowToken?.value, selectedOption.value);
+        if (selectedOption && selectedBorrowToken) {
+            const poolAddress = await getPoolByPairs(provider, selectedBorrowToken.value, selectedOption.value);
             if (poolAddress) {
                 setSelectedPool(poolAddress);
             }
@@ -88,7 +91,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
         }
     };
 
-    // Effect to fetch the first pool when both tokens are selected
+    // Fetch the first pool when both tokens are selected
     useEffect(() => {
         const fetchInitialPool = async () => {
             if (selectedBorrowToken && selectedCollateralToken) {
@@ -106,6 +109,11 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                 title: 'Error!',
                 text: 'Please select a borrow token, collateral token, and enter a valid amount.',
                 icon: 'error',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
                 confirmButtonText: 'Close',
             });
             return;
@@ -124,6 +132,11 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                 </div>
             `,
                 icon: 'success',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
                 confirmButtonText: 'Close',
             });
         } catch (error) {
@@ -131,6 +144,11 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                 title: 'Error!',
                 text: 'There was a problem with the borrow.',
                 icon: 'error',
+                customClass: {
+                    popup: 'my-custom-popup',
+                    confirmButton: 'my-custom-confirm-button',
+                    cancelButton: 'my-custom-cancel-button',
+                },
                 confirmButtonText: 'Close',
             });
         } finally {
@@ -146,40 +164,43 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                     tokenOptions={defaultTokenOptions}
                     handleOnChange={setSelectedBorrowToken}
                     handleValue={selectedBorrowToken}
-                    className="border-none hover:border-0 w-full px-0 py-2"
+                    className="border-none hover:border-0"
                 />
-                <input
-                    type="tel"
-                    value={borrowAmount || ''}
-                    onChange={(e) => setBorrowAmount(parseFloat(e.target.value) || 0)}
-                    placeholder="0"
-                    className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
-                />
+                <div className="space-y-2 w-full">
+                    <input
+                        type="tel"
+                        value={borrowAmount || ''}
+                        onChange={(e) => setBorrowAmount(parseFloat(e.target.value) || 0)}
+                        placeholder="0"
+                        className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
+                    />
+                    <input type="range" min={0} max={100} value={borrowAmount || ''}
+                        onChange={(e) => setBorrowAmount(parseFloat(e.target.value) || 0)}
+                        className="range range-xs" />
+                </div>
             </div>
-            <div className="w-full p-2">
+            <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
                     placeholder='Choose Durations'
                     tokenOptions={durationList}
                     handleOnChange={setSelectedDuration}
                     handleValue={selectedDuration}
-                    className="border-none hover:border-0 w-full px-0 py-2"
+                    className="border-none hover:border-0"
                 />
-            </div>
-            <div className="w-full p-2">
-                <CustomSelectSearch
-                    placeholder='Choose Pool'
-                    tokenOptions={poolOptions} 
-                    handleOnChange={handlePoolChange}
-                    handleValue={selectedPool ? { value: selectedPool, label: `Pool ${selectedPool}` } : null}
-                    className="border-none hover:border-0 w-full px-0 py-2"
-                />
-            </div>
-            <div className="w-full p-2">
                 <CustomSelectSearch
                     placeholder='Choose Collateral Token'
                     tokenOptions={collateralOptions}
                     handleOnChange={setSelectedCollateralToken}
                     handleValue={selectedCollateralToken}
+                    className="border-none hover:border-0"
+                />
+            </div>
+            <div className="w-full p-2">
+                <CustomSelectSearch
+                    placeholder='Choose Pool'
+                    tokenOptions={poolOptions}
+                    handleOnChange={handlePoolChange}
+                    handleValue={selectedPool ? { value: selectedPool, label: `Pool ${selectedPool}` } : null}
                     className="border-none hover:border-0 w-full px-0 py-2"
                 />
             </div>
