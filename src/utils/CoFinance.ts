@@ -1101,28 +1101,30 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
   };
   
   export const swapTokens = async (
-	provider: ethers.BrowserProvider,
-	poolAddress: string,
-	tokenAddress: string,
-	tokenAmount: string
+    provider: ethers.BrowserProvider,
+    poolAddress: string,
+    tokenAddress: string,
+    tokenAmount: string
 	): Promise<void> => {
-		try {
-			const signer = provider.getSigner();
-			const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
-			console.log(poolAddress);
-			const amount = ethers.parseUnits(tokenAmount, 18); 
-			const tx = await contractWithSigner.provideLiquidity(tokenAddress, amount);
-			await tx.wait();
-			console.log('Liquidity provided:', tokenAddress, amount);
-		  } catch (error) {
-			console.error('Error providing liquidity:', error);
-			throw error; 
-		  }
-  };
+    try {
+        const signer = await provider.getSigner();
+        const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
+        console.log(poolAddress);
+
+        const amount = ethers.parseUnits(tokenAmount, 18); 
+        const tx = await contractWithSigner.swapTokens(tokenAddress, amount); 
+        await tx.wait();
+        console.log('Swap provided:', tokenAddress, amount);
+    } catch (error) {
+        console.error('Error providing Swap:', error);
+        throw error; 
+    }
+};
+
 
   export const previewSwap = async (
 	provider: ethers.BrowserProvider,
-	poolAddress: string,
+	poolAddress: string, 
 	tokenAddress: string,
 	tokenAmount: string
   ): Promise<{ outputAmount: string, feeAmount: string }> => {

@@ -96,7 +96,7 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
       await provideLiquidity(providerRef.current, poolAddressFromAPI, amountA.toString(), amountB.toString());
       console.log("Liquidity added successfully:", selectedTokenA.label, selectedTokenB.label, amountA, amountB);
       alert(`Successfully added liquidity: ${amountA} ${selectedTokenA.label} and ${amountB} ${selectedTokenB.label}`);
-      onClose(); // Close the modal after successful liquidity provision
+      onClose(); 
     } catch (error) {
       console.error('Error during liquidity provision:', error);
     }
