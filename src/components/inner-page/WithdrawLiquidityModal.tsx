@@ -65,17 +65,12 @@ const WithdrawLiquidityModal: React.FC<WithdrawLiquidityModalProps> = ({ open, o
 
     setLoadingApproval(true);
     try {
-      // Approve the liquidity withdrawal
       await approveToken(providerRef.current, liquidityToken, poolAddressFromAPI, amount.toString());
       alert(`Successfully approved withdrawal of ${amount} tokens.`);
-
-      // Sign the transaction
       const signer = await providerRef.current.getSigner();
       const message = `I confirm the withdrawal of ${amount} tokens from the liquidity pool.`;
       const signature = await signer.signMessage(message);
-      console.log("User signature:", signature); // Optionally log the signature
-
-      // Withdraw liquidity after approval
+      console.log("User signature:", signature); 
       await withdrawLiquidity(providerRef.current, poolAddressFromAPI, amount.toString());
       console.log("Liquidity withdrawn successfully:", amount);
       alert(`Successfully withdrew liquidity: ${amount} from the pool`);

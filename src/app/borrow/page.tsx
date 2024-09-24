@@ -1,12 +1,18 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Drawer from '@/components/Drawer';
 import Collateral from '@/components/inner-page/Collateral';
-import BorrowTokens from '@/components/inner-page/BorrowTokens'; // Import BorrowTokens
+import BorrowTokens from '@/components/inner-page/BorrowTokens'; 
 import tokens from '@/data/token.json';
 import durationsData from '@/data/durations.json';
+import { ethers } from 'ethers';
+import { getUserCollateralBalances } from '../../utils/CoFinance';
 
 const Borrow: React.FC = () => {
+  const [account, setAccount] = useState<string | null>(null);
+  const [collateralBalance, setCollateralBalance] = useState<number>(0); 
+  const providerRef = useRef<ethers.BrowserProvider | null>(null);
+
   const tabsBorrow = [
     {
       label: "Collateral",
@@ -32,7 +38,6 @@ const Borrow: React.FC = () => {
             label: token.name,
             image: token.image,
           }))}
-          // Convert `value` to a string
           durationOptions={durationsData.durations.map(items => ({
             value: String(items.value),
             label: items.label,
@@ -45,8 +50,36 @@ const Borrow: React.FC = () => {
     },
   ];
 
-  const ltv = 1000;
-  const collateralBalance = 34050;
+  const fetchCollateralBalance = async () => {
+    if (!providerRef.current || !account) return;
+
+    try {
+      const balances = await getUserCollateralBalances(providerRef.current, account);
+      const totalCollateral = Object.values(balances).reduce((acc, balance) => acc + parseFloat(balance.collateralA) + parseFloat(balance.collateralB), 0);
+      setCollateralBalance(totalCollateral);
+    } catch (error) {
+      console.error('Error fetching collateral balances:', error);
+    }
+  };
+
+  useEffect(() => {
+    const loadAccount = async () => {
+      if (!window.ethereum) return;
+
+      providerRef.current = new ethers.BrowserProvider(window.ethereum);
+      const signer = await providerRef.current.getSigner();
+      const accountAddress = await signer.getAddress();
+      setAccount(accountAddress);
+    };
+
+    loadAccount();
+  }, []);
+
+  useEffect(() => {
+    if (account) {
+      fetchCollateralBalance();
+    }
+  }, [account]);
 
   return (
     <section className="min-h-screen animation-bounce bg-borrow bg-no-repeat bg-contain image-full text-center max-w-screen">
@@ -54,7 +87,7 @@ const Borrow: React.FC = () => {
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center justify-between rounded-xl w-full px-10 bg-explore py-5">
             <div className="text-start">
-              <p className="text-4xl font-bold text-white">${ltv.toLocaleString()}</p>
+              <p className="text-4xl font-bold text-white">${collateralBalance.toLocaleString()}</p> {/* Changed to collateralBalance */}
             </div>
             <div className="text-end" data-aos="fade-left">
               <p className='text-gray-600 text-md uppercase'>Your Deposited Collateral</p>
@@ -67,7 +100,7 @@ const Borrow: React.FC = () => {
 
           <div className="flex items-center justify-between rounded-xl w-full px-10 bg-explore py-5">
             <div className="text-start">
-              <p className="text-4xl font-bold text-white">${collateralBalance.toLocaleString()}</p>
+              <p className="text-4xl font-bold text-white">${0}</p> {/* Placeholder for borrowed amounts */}
             </div>
             <div className="text-end" data-aos="fade-left">
               <p className='text-gray-600 text-md uppercase'>Your Borrowed Amounts</p>

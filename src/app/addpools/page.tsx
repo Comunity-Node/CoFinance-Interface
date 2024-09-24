@@ -12,7 +12,6 @@ const promptMetaMaskSign = async (message: string): Promise<string> => {
   if (!window.ethereum) {
     throw new Error('MetaMask is not installed');
   }
-
   const provider = new ethers.BrowserProvider(window.ethereum);
   const signer = await provider.getSigner();
   const signature = await signer.signMessage(message);

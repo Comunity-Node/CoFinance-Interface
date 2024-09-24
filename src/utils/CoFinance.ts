@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { getAllPools, getPoolByPairs} from './Factory'
+import { getAllPools} from './Factory'
 
 const COFINANCE_ABI = [
 	{
@@ -1141,19 +1141,20 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
 	}
   };
   
-  export const depositCollateral = async (provider: ethers.BrowserProvider, tokenAddress: string, amount: string): Promise<void> => {
+  export const depositCollateral = async (provider: ethers.BrowserProvider, poolAddress: string, tokenAddress: string, tokenAmount: string): Promise<void> => {
     try {
-      const coFinanceAddress = await getAllPools(provider);
-      const signer: Signer = provider.getSigner();
-      const contractWithSigner = new ethers.Contract(coFinanceAddress, COFINANCE_ABI, signer);
-      const tx = await contractWithSigner.depositCollateral(tokenAddress, ethers.parseUnits(amount));
-      await tx.wait();
-      console.log('Collateral deposited:', tokenAddress, amount);
+        const signer = await provider.getSigner(); 
+        const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
+        const amountInUnits = ethers.parseUnits(tokenAmount, 18);
+        const tx = await contractWithSigner.depositCollateral(tokenAddress, amountInUnits);
+        await tx.wait();
+        console.log('Collateral deposited:', tokenAddress, tokenAmount);
     } catch (error) {
-      console.error('Error depositing collateral:', error);
-      throw error;
+        console.error('Error depositing collateral:', error);
+        throw error; 
     }
-  };
+};
+
   
   export const withdrawCollateral = async (provider: ethers.BrowserProvider, amount: string): Promise<void> => {
     try {
@@ -1169,13 +1170,12 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
     }
   };
   
-  export const borrowTokens = async (provider: ethers.BrowserProvider, amount: string, tokenAddress: string, duration: number): Promise<void> => {
+  export const borrowTokens = async (provider: ethers.BrowserProvider, poolAddress: string, amount: string, tokenAddress: string, duration: number): Promise<void> => {
     try {
-      const coFinanceAddress = await getAllPools(provider);
-      const signer: Signer = provider.getSigner();
-      const contractWithSigner = new ethers.Contract(coFinanceAddress, COFINANCE_ABI, signer);
+      const signer = provider.getSigner();
+      const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
       const tx = await contractWithSigner.borrowTokens(
-        ethers.parseUnits(amount),
+        ethers.formatUnits(amount, 18),
         tokenAddress,
         duration
       );
@@ -1278,6 +1278,30 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
         throw error;
     }
   };
+
+  export const getUserCollateralBalances = async (provider: ethers.BrowserProvider, account: string): Promise<{ [poolAddress: string]: { collateralA: string, collateralB: string } }> => {
+    try {
+        const pools = await getAllPools(provider);
+        const collateralBalances: { [poolAddress: string]: { collateralA: string, collateralB: string } } = {};
+
+        for (const poolAddress of pools) {
+            const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
+            const collateralABalance = await contract.collateralA(account); 
+            const collateralBBalance = await contract.collateralB(account);
+            
+            collateralBalances[poolAddress] = {
+                collateralA: ethers.formatUnits(collateralABalance, 18),
+                collateralB: ethers.formatUnits(collateralBBalance, 18),
+            }; 
+        }
+
+        return collateralBalances;
+    } catch (error) {
+        console.error('Error fetching user collateral balances:', error);
+        throw error;
+    }
+	};
+
 
   export const getLiquidityToken = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ liquidityToken: string }> => {
     try {

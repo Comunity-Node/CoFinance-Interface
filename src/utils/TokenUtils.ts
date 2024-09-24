@@ -340,7 +340,7 @@ export const approveToken = async (
     console.log(`Approved ${amount} tokens for spender: ${spender}`);
   } catch (error) {
     console.error('Error approving token:', error);
-    throw error; // Propagate the error for further handling if needed
+    throw error; 
   }
 };
 
