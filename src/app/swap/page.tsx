@@ -68,7 +68,7 @@ const Swap: React.FC = () => {
 
     if (poolAddress && fromToken && toToken && amount > 0 && provider) {
       try {
-        const { outputAmount, feeAmount } = await previewSwap(provider, fromToken.value, amount.toString());
+        const { outputAmount, feeAmount } = await previewSwap(provider, poolAddress, fromToken.value, amount.toString());
         setToAmount(parseFloat(outputAmount));
         setFeeAmount(parseFloat(feeAmount));
       } catch (error) {
@@ -113,7 +113,7 @@ const Swap: React.FC = () => {
 
     setIsSwap(true);
     try {
-      await swapTokens(provider, fromToken.value, toToken.value, fromAmount.toString());
+      await swapTokens(provider, poolAddress, fromToken.value, fromAmount.toString());
       MySwal.fire({
         icon: 'success',
         title: 'Swap Successful',
@@ -213,8 +213,6 @@ const Swap: React.FC = () => {
               className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
             />
           </div>
-
-          {/* Display pool address */}
           {poolAddress && (
             <div className="flex items-center justify-between text-gray-500 text-md">
               <div>Pool Address: <strong>{poolAddress}</strong></div>
