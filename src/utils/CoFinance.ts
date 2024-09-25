@@ -1172,20 +1172,22 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
   
   export const borrowTokens = async (provider: ethers.BrowserProvider, poolAddress: string, amount: string, tokenAddress: string, duration: number): Promise<void> => {
     try {
-      const signer = provider.getSigner();
-      const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
-      const tx = await contractWithSigner.borrowTokens(
-        ethers.formatUnits(amount, 18),
-        tokenAddress,
-        duration
-      );
-      await tx.wait();
-      console.log('Tokens borrowed:', amount, tokenAddress, duration);
+        const signer = await provider.getSigner();
+        const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
+        const formattedAmount = ethers.parseUnits(amount, 18);
+        const tx = await contractWithSigner.borrowTokens(
+            formattedAmount,
+            tokenAddress,
+            duration
+        );
+        await tx.wait();
+        console.log('Tokens borrowed:', amount, tokenAddress, duration);
     } catch (error) {
-      console.error('Error borrowing tokens:', error);
-      throw error;
+        console.error('Error borrowing tokens:', error);
+        throw error;
     }
-  };
+};
+
   
   export const provideLiquidity = async (
 	provider: ethers.BrowserProvider,
@@ -1300,8 +1302,23 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
         console.error('Error fetching user collateral balances:', error);
         throw error;
     }
-	};
+  };
 
+  export const getCollateral = async (provider: ethers.BrowserProvider, account: string, poolAddress: string): Promise<{ collateralA: string, collateralB: string }> => {
+	try {
+		const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
+		const collateralABalance = await contract.collateralA(account); 
+		const collateralBBalance = await contract.collateralB(account);
+		
+		return {
+			collateralA: ethers.formatUnits(collateralABalance, 18),
+			collateralB: ethers.formatUnits(collateralBBalance, 18),
+		}; 
+	} catch (error) {
+		console.error('Error fetching user collateral balances:', error);
+		throw error;
+	}
+  };	
 
   export const getLiquidityToken = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ liquidityToken: string }> => {
     try {

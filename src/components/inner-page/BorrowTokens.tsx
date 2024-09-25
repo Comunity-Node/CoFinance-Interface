@@ -1,36 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MdOutlineArrowOutward } from 'react-icons/md';
 import tokens from '@/data/token.json';
-import durationsData from '@/data/durations.json';
 import CustomSelectSearch from '@/components/CustomSelectSearch';
 import { ImageSelect } from '@/types/ImageSelect';
 import { SelectList } from '@/types/SelectList';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { ethers } from 'ethers';
-import { getUserCollateralBalances } from '@/utils/CoFinance';
-import { getPoolByPairs } from '@/utils/Factory';
+import { getCollateral, getTokenAddresses, borrowTokens } from '../../utils/CoFinance'; 
+import { getTokenBalance } from '../../utils/TokenUtils';
+import { getPoolByPairs } from '../../utils/Factory';
 import '@sweetalert2/theme-dark/dark.css';
 
 const MySwal = withReactContent(Swal);
 
+const SECONDS_IN_30_DAYS = 30 * 24 * 60 * 60; 
+const SECONDS_IN_90_DAYS = 90 * 24 * 60 * 60; 
+
 interface CollateralProps {
     tokenOptions?: ImageSelect[];
-    durationOptions?: SelectList[];
     handleBorrowAmounts: (amount: number) => Promise<{ amount: number }>;
-    account: string;
-    provider: ethers.BrowserProvider;
 }
 
-const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOptions = [], handleBorrowAmounts, account, provider }) => {
+const BorrowTokens: React.FC<CollateralProps> = ({
+    tokenOptions = [],
+    handleBorrowAmounts,
+}) => {
     const [selectedBorrowToken, setSelectedBorrowToken] = useState<ImageSelect | null>(null);
     const [selectedCollateralToken, setSelectedCollateralToken] = useState<ImageSelect | null>(null);
     const [selectedDuration, setSelectedDuration] = useState<SelectList | null>(null);
     const [selectedPool, setSelectedPool] = useState<string | null>(null);
+    const [account, setAccount] = useState<string | null>(null);
     const [isBorrowing, setIsBorrowing] = useState<boolean>(false);
     const [borrowAmount, setBorrowAmount] = useState<number>(0);
-    const [collateralOptions, setCollateralOptions] = useState<ImageSelect[]>([]);
-    const [poolOptions, setPoolOptions] = useState<{ value: string; label: string }[]>([]);
+    const [userCollateralBalances, setUserCollateralBalances] = useState<{ [key: string]: string } | null>(null);
+    const [userBorrowTokenBalance, setUserBorrowTokenBalance] = useState<string>('0');
+    const [loading, setLoading] = useState<boolean>(false);
+    const providerRef = useRef<ethers.BrowserProvider | null>(null);
+    const [borrowTokenAddress, setBorrowTokenAddress] = useState<string | null>(null);
+    const [collateralTokenAddress, setCollateralTokenAddress] = useState<string | null>(null);
 
     const defaultTokenOptions = tokenOptions.length > 0 ? tokenOptions : tokens.tokens.map(token => ({
         value: token.address,
@@ -38,73 +46,79 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
         image: token.image,
     }));
 
-    const durationList = durationOptions.length > 0 ? durationOptions : durationsData.durations.map(item => ({
-        value: String(item.value),
-        label: item.label,
-    }));
+    const durationList = [
+        { value: String(SECONDS_IN_30_DAYS), label: '30 Days' },
+        { value: String(SECONDS_IN_90_DAYS), label: '90 Days' },
+    ];
 
-    // Ensure account is a valid string before using it
     useEffect(() => {
-        if (!account || !provider) return;
-
-        const fetchCollateralBalances = async () => {
+        const loadAccount = async () => {
+            setLoading(true);
             try {
-                const balances = await getUserCollateralBalances(provider, account);
-                const options: ImageSelect[] = [];
-                const pools: { value: string; label: string }[] = [];
-
-                for (const pool in balances) {
-                    const { collateralA, collateralB } = balances[pool];
-                    if (collateralA || collateralB) {
-                        pools.push({ value: pool, label: `Pool ${pool}` });
-                        const tokenImage = tokens.tokens.find(token => token.address === pool)?.image || '/analitycs-bg.svg'; // Provide a default image or empty string if undefined
-                        if (collateralA) {
-                            options.push({ value: pool, label: `Collateral A (${collateralA})`, image: tokenImage });
-                        }
-                        if (collateralB) {
-                            options.push({ value: pool, label: `Collateral B (${collateralB})`, image: tokenImage });
-                        }
-                    }
+                if (!window.ethereum) return;
+                if (!providerRef.current) {
+                    providerRef.current = new ethers.BrowserProvider(window.ethereum);
                 }
+                const signer = await providerRef.current.getSigner();
+                const accountAddress = await signer.getAddress();
+                setAccount(accountAddress);
+            } catch (error) {
+                console.error('Error loading account:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-                setPoolOptions(pools);
-                setCollateralOptions(options);
+        loadAccount();
+    }, []);
+
+    const fetchPoolAddress = async () => {
+        if (!providerRef.current || !selectedBorrowToken || !selectedCollateralToken) return;
+        const poolAddress = await getPoolByPairs(providerRef.current, selectedBorrowToken.value, selectedCollateralToken.value);
+        setSelectedPool(poolAddress || null);
+
+        if (poolAddress) {
+            try {
+                const balances = await getCollateral(providerRef.current, account, poolAddress);
+                const collateralA = balances.collateralA || '0';
+                const collateralB = balances.collateralB || '0';
+                setUserCollateralBalances({ [selectedCollateralToken.label]: collateralA });
+
+                const addresses = await getTokenAddresses(providerRef.current, selectedBorrowToken.value, selectedCollateralToken.value);
+                setBorrowTokenAddress(addresses.borrowTokenAddress);
+                setCollateralTokenAddress(addresses.collateralTokenAddress);
             } catch (error) {
                 console.error('Error fetching collateral balances:', error);
             }
-        };
-
-        fetchCollateralBalances();
-    }, [account, provider]);
-
-    const handlePoolChange = async (selectedOption: { value: string; label: string } | null) => {
-        setSelectedPool(selectedOption?.value || null);
-        setSelectedCollateralToken(null);
-
-        if (selectedOption && selectedBorrowToken) {
-            const poolAddress = await getPoolByPairs(provider, selectedBorrowToken.value, selectedOption.value);
-            if (poolAddress) {
-                setSelectedPool(poolAddress);
-            }
-        } else {
-            setCollateralOptions([]);
         }
     };
 
-    // Fetch the first pool when both tokens are selected
     useEffect(() => {
-        const fetchInitialPool = async () => {
-            if (selectedBorrowToken && selectedCollateralToken) {
-                const poolAddress = await getPoolByPairs(provider, selectedBorrowToken.value, selectedCollateralToken.value);
-                setSelectedPool(poolAddress || null);
-            }
-        };
+        fetchPoolAddress();
+    }, [selectedBorrowToken, selectedCollateralToken]);
 
-        fetchInitialPool();
-    }, [selectedBorrowToken, selectedCollateralToken, provider]);
+    const fetchBorrowTokenBalance = async (account: string) => {
+        if (!providerRef.current || !selectedBorrowToken) return;
+
+        const balance = await getTokenBalance(providerRef.current, selectedBorrowToken.value, account);
+        setUserBorrowTokenBalance(balance);
+    };
+
+    useEffect(() => {
+        if (account) {
+            fetchBorrowTokenBalance(account);
+        }
+    }, [selectedBorrowToken, account]);
+
+    const handleTokenSelection = (setToken: React.Dispatch<React.SetStateAction<ImageSelect | null>>, selectedToken: ImageSelect | null) => {
+        setToken(selectedToken);
+        if (setToken === setSelectedCollateralToken) {
+            fetchPoolAddress();
+        }
+    };
 
     const onBorrowTokens = async () => {
-        if (!selectedBorrowToken || !selectedCollateralToken || !selectedDuration || borrowAmount <= 0) {
+        if (!selectedBorrowToken || !selectedCollateralToken || !selectedDuration || borrowAmount <= 0 || !selectedPool) {
             await MySwal.fire({
                 title: 'Error!',
                 text: 'Please select a borrow token, collateral token, and enter a valid amount.',
@@ -118,11 +132,23 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
             });
             return;
         }
-
+    
         setIsBorrowing(true);
         try {
-            const result = await handleBorrowAmounts(borrowAmount);
-            setBorrowAmount(result.amount);
+            console.log("Borrowing tokens with the following parameters:");
+            console.log("Pool Address:", selectedPool);
+            console.log("Borrow Amount:", borrowAmount);
+            console.log("Borrow Token Address:", selectedBorrowToken.value);
+            console.log("Duration (in seconds):", selectedDuration.value);
+            
+            await borrowTokens(
+                providerRef.current!, 
+                selectedPool,
+                borrowAmount.toString(),
+                selectedBorrowToken.value,
+                parseInt(selectedDuration.value) 
+            );
+    
             await MySwal.fire({
                 title: 'Borrow Successfully!',
                 html: `
@@ -130,7 +156,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                     <img src="${selectedBorrowToken.image}" alt="${selectedBorrowToken.label}" style="border-radius: 50%; width: 20%; height: 20%; margin-right: 10px;">
                     <span style="text-align: start"><strong>${selectedBorrowToken.label}</strong> with amount <strong>$${borrowAmount}</strong> & Duration ends <strong>${selectedDuration.label}</strong></span>
                 </div>
-            `,
+                `,
                 icon: 'success',
                 customClass: {
                     popup: 'my-custom-popup',
@@ -139,10 +165,12 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                 },
                 confirmButtonText: 'Close',
             });
+            fetchBorrowTokenBalance(account);
         } catch (error) {
+            console.error('Error during borrowing:', error);
             await MySwal.fire({
                 title: 'Error!',
-                text: 'There was a problem with the borrow.',
+                text: 'There was a problem with the borrow: ' + (error.message || error),
                 icon: 'error',
                 customClass: {
                     popup: 'my-custom-popup',
@@ -162,7 +190,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
                 <CustomSelectSearch
                     placeholder='Choose Tokens to Borrow'
                     tokenOptions={defaultTokenOptions}
-                    handleOnChange={setSelectedBorrowToken}
+                    handleOnChange={(token) => handleTokenSelection(setSelectedBorrowToken, token)}
                     handleValue={selectedBorrowToken}
                     className="border-none hover:border-0"
                 />
@@ -181,27 +209,29 @@ const BorrowTokens: React.FC<CollateralProps> = ({ tokenOptions = [], durationOp
             </div>
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
+                    placeholder='Choose Collateral Token'
+                    tokenOptions={defaultTokenOptions} 
+                    handleOnChange={(token) => handleTokenSelection(setSelectedCollateralToken, token)}
+                    handleValue={selectedCollateralToken}
+                    className="border-none hover:border-0 w-full px-0 py-2"
+                />
+            </div>
+            {selectedPool && userCollateralBalances && selectedCollateralToken && (
+                <div className="p-4 rounded-lg shadow-md"> 
+                    <div className="flex justify-between">
+                        <div>
+                            <strong>Available collateral {selectedCollateralToken.label}:</strong> {userCollateralBalances[selectedCollateralToken.label]}
+                        </div>
+                    </div>
+                </div>
+            )}
+            <div className="w-full p-2">
+                <CustomSelectSearch
                     placeholder='Choose Durations'
                     tokenOptions={durationList}
                     handleOnChange={setSelectedDuration}
                     handleValue={selectedDuration}
                     className="border-none hover:border-0"
-                />
-                <CustomSelectSearch
-                    placeholder='Choose Collateral Token'
-                    tokenOptions={collateralOptions}
-                    handleOnChange={setSelectedCollateralToken}
-                    handleValue={selectedCollateralToken}
-                    className="border-none hover:border-0"
-                />
-            </div>
-            <div className="w-full p-2">
-                <CustomSelectSearch
-                    placeholder='Choose Pool'
-                    tokenOptions={poolOptions}
-                    handleOnChange={handlePoolChange}
-                    handleValue={selectedPool ? { value: selectedPool, label: `Pool ${selectedPool}` } : null}
-                    className="border-none hover:border-0 w-full px-0 py-2"
                 />
             </div>
             <div className="w-full text-end rounded-lg p-1 bg-[#bdc3c7]">
