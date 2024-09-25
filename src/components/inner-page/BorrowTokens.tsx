@@ -5,32 +5,31 @@ import CustomSelectSearch from '@/components/CustomSelectSearch';
 import { ImageSelect } from '@/types/ImageSelect';
 import { SelectList } from '@/types/SelectList';
 import Swal from 'sweetalert2';
+import { durations } from '@/utils/durations';
 import withReactContent from 'sweetalert2-react-content';
 import { ethers } from 'ethers';
-import { getCollateral, getTokenAddresses, borrowTokens } from '../../utils/CoFinance'; 
+import { getCollateral, getTokenAddresses, borrowTokens } from '../../utils/CoFinance';
 import { getTokenBalance } from '../../utils/TokenUtils';
 import { getPoolByPairs } from '../../utils/Factory';
 import '@sweetalert2/theme-dark/dark.css';
+import { useAccount } from '@/app/RootLayout';
 
 const MySwal = withReactContent(Swal);
 
-const SECONDS_IN_30_DAYS = 30 * 24 * 60 * 60; 
-const SECONDS_IN_90_DAYS = 90 * 24 * 60 * 60; 
-
-interface CollateralProps {
+interface BorowsTokenProps {
     tokenOptions?: ImageSelect[];
+    durationOptions?: SelectList[];
     handleBorrowAmounts: (amount: number) => Promise<{ amount: number }>;
+    accounts: string;
+    provider: ethers.BrowserProvider;
 }
 
-const BorrowTokens: React.FC<CollateralProps> = ({
-    tokenOptions = [],
-    handleBorrowAmounts,
-}) => {
+const BorrowTokens: React.FC<BorowsTokenProps> = ({ tokenOptions = [], durationOptions = [], handleBorrowAmounts, accounts, provider }) => {
     const [selectedBorrowToken, setSelectedBorrowToken] = useState<ImageSelect | null>(null);
     const [selectedCollateralToken, setSelectedCollateralToken] = useState<ImageSelect | null>(null);
     const [selectedDuration, setSelectedDuration] = useState<SelectList | null>(null);
     const [selectedPool, setSelectedPool] = useState<string | null>(null);
-    const [account, setAccount] = useState<string | null>(null);
+    const { account, setAccount } = useAccount();
     const [isBorrowing, setIsBorrowing] = useState<boolean>(false);
     const [borrowAmount, setBorrowAmount] = useState<number>(0);
     const [userCollateralBalances, setUserCollateralBalances] = useState<{ [key: string]: string } | null>(null);
@@ -40,16 +39,17 @@ const BorrowTokens: React.FC<CollateralProps> = ({
     const [borrowTokenAddress, setBorrowTokenAddress] = useState<string | null>(null);
     const [collateralTokenAddress, setCollateralTokenAddress] = useState<string | null>(null);
 
+    // Default token and duration options
     const defaultTokenOptions = tokenOptions.length > 0 ? tokenOptions : tokens.tokens.map(token => ({
         value: token.address,
         label: token.name,
         image: token.image,
     }));
 
-    const durationList = [
-        { value: String(SECONDS_IN_30_DAYS), label: '30 Days' },
-        { value: String(SECONDS_IN_90_DAYS), label: '90 Days' },
-    ];
+    const durationList = durationOptions.length > 0 ? durationOptions : durations.map(item => ({
+        value: String(item.value),
+        label: item.label,
+    }));
 
     useEffect(() => {
         const loadAccount = async () => {
@@ -72,21 +72,20 @@ const BorrowTokens: React.FC<CollateralProps> = ({
         loadAccount();
     }, []);
 
+    // Fetch pool address and collateral data
     const fetchPoolAddress = async () => {
         if (!providerRef.current || !selectedBorrowToken || !selectedCollateralToken) return;
         const poolAddress = await getPoolByPairs(providerRef.current, selectedBorrowToken.value, selectedCollateralToken.value);
         setSelectedPool(poolAddress || null);
 
         if (poolAddress) {
+            const balances = await getCollateral(providerRef.current, account || '', poolAddress);
+            const collateralA = balances.collateralA || '0';
+            setUserCollateralBalances({ [selectedCollateralToken.label]: collateralA });
             try {
-                const balances = await getCollateral(providerRef.current, account, poolAddress);
-                const collateralA = balances.collateralA || '0';
-                const collateralB = balances.collateralB || '0';
-                setUserCollateralBalances({ [selectedCollateralToken.label]: collateralA });
-
-                const addresses = await getTokenAddresses(providerRef.current, selectedBorrowToken.value, selectedCollateralToken.value);
-                setBorrowTokenAddress(addresses.borrowTokenAddress);
-                setCollateralTokenAddress(addresses.collateralTokenAddress);
+                const addresses = await getTokenAddresses(providerRef.current, selectedBorrowToken.value);
+                setBorrowTokenAddress(addresses.borrowTokenAddress || null);
+                setCollateralTokenAddress(addresses.tokenA ? addresses.tokenA : null);
             } catch (error) {
                 console.error('Error fetching collateral balances:', error);
             }
@@ -97,9 +96,9 @@ const BorrowTokens: React.FC<CollateralProps> = ({
         fetchPoolAddress();
     }, [selectedBorrowToken, selectedCollateralToken]);
 
+    // Fetch borrow token balance for the account
     const fetchBorrowTokenBalance = async (account: string) => {
         if (!providerRef.current || !selectedBorrowToken) return;
-
         const balance = await getTokenBalance(providerRef.current, selectedBorrowToken.value, account);
         setUserBorrowTokenBalance(balance);
     };
@@ -110,6 +109,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({
         }
     }, [selectedBorrowToken, account]);
 
+    // Handle token selection (borrow and collateral)
     const handleTokenSelection = (setToken: React.Dispatch<React.SetStateAction<ImageSelect | null>>, selectedToken: ImageSelect | null) => {
         setToken(selectedToken);
         if (setToken === setSelectedCollateralToken) {
@@ -117,6 +117,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({
         }
     };
 
+    // Borrow tokens function
     const onBorrowTokens = async () => {
         if (!selectedBorrowToken || !selectedCollateralToken || !selectedDuration || borrowAmount <= 0 || !selectedPool) {
             await MySwal.fire({
@@ -126,29 +127,22 @@ const BorrowTokens: React.FC<CollateralProps> = ({
                 customClass: {
                     popup: 'my-custom-popup',
                     confirmButton: 'my-custom-confirm-button',
-                    cancelButton: 'my-custom-cancel-button',
                 },
                 confirmButtonText: 'Close',
             });
             return;
         }
-    
+
         setIsBorrowing(true);
         try {
-            console.log("Borrowing tokens with the following parameters:");
-            console.log("Pool Address:", selectedPool);
-            console.log("Borrow Amount:", borrowAmount);
-            console.log("Borrow Token Address:", selectedBorrowToken.value);
-            console.log("Duration (in seconds):", selectedDuration.value);
-            
             await borrowTokens(
-                providerRef.current!, 
+                providerRef.current!,
                 selectedPool,
                 borrowAmount.toString(),
                 selectedBorrowToken.value,
-                parseInt(selectedDuration.value) 
+                parseInt(selectedDuration.value)
             );
-    
+
             await MySwal.fire({
                 title: 'Borrow Successfully!',
                 html: `
@@ -161,21 +155,19 @@ const BorrowTokens: React.FC<CollateralProps> = ({
                 customClass: {
                     popup: 'my-custom-popup',
                     confirmButton: 'my-custom-confirm-button',
-                    cancelButton: 'my-custom-cancel-button',
                 },
                 confirmButtonText: 'Close',
             });
-            fetchBorrowTokenBalance(account);
+            fetchBorrowTokenBalance(account || '');
         } catch (error) {
             console.error('Error during borrowing:', error);
             await MySwal.fire({
                 title: 'Error!',
-                text: 'There was a problem with the borrow: ' + (error.message || error),
+                text: 'There was a problem with the borrow: ' + (error),
                 icon: 'error',
                 customClass: {
                     popup: 'my-custom-popup',
                     confirmButton: 'my-custom-confirm-button',
-                    cancelButton: 'my-custom-cancel-button',
                 },
                 confirmButtonText: 'Close',
             });
@@ -210,37 +202,27 @@ const BorrowTokens: React.FC<CollateralProps> = ({
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
                     placeholder='Choose Collateral Token'
-                    tokenOptions={defaultTokenOptions} 
+                    tokenOptions={defaultTokenOptions}
                     handleOnChange={(token) => handleTokenSelection(setSelectedCollateralToken, token)}
                     handleValue={selectedCollateralToken}
-                    className="border-none hover:border-0 w-full px-0 py-2"
+                    className="border-none hover:border-0"
                 />
-            </div>
-            {selectedPool && userCollateralBalances && selectedCollateralToken && (
-                <div className="p-4 rounded-lg shadow-md"> 
-                    <div className="flex justify-between">
-                        <div>
-                            <strong>Available collateral {selectedCollateralToken.label}:</strong> {userCollateralBalances[selectedCollateralToken.label]}
-                        </div>
-                    </div>
-                </div>
-            )}
-            <div className="w-full p-2">
                 <CustomSelectSearch
-                    placeholder='Choose Durations'
+                    placeholder='Select Duration'
                     tokenOptions={durationList}
-                    handleOnChange={setSelectedDuration}
+                    handleOnChange={(duration) => setSelectedDuration(duration)}
                     handleValue={selectedDuration}
                     className="border-none hover:border-0"
                 />
             </div>
             <div className="w-full text-end rounded-lg p-1 bg-[#bdc3c7]">
-                <button
-                    className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full"
-                    onClick={onBorrowTokens}
-                    disabled={isBorrowing}
-                >
-                    {isBorrowing ? 'Borrowing...' : 'Borrow'} <MdOutlineArrowOutward />
+                <button onClick={onBorrowTokens} className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full" disabled={isBorrowing || loading}>
+                    {isBorrowing ? 'Processing...' : (
+                        <span className='flex items-center justify-between'>
+                            Borrow Now
+                            <MdOutlineArrowOutward size={18} />
+                        </span>
+                    )}
                 </button>
             </div>
         </div>

@@ -4,11 +4,10 @@ import Drawer from '@/components/Drawer';
 import Collateral from '@/components/inner-page/Collateral';
 import BorrowTokens from '@/components/inner-page/BorrowTokens';
 import tokens from '@/data/token.json';
-import durationsData from '@/data/durations.json';
+import { durations } from '@/utils/durations';
 import { ethers } from 'ethers';
 import { getUserCollateralBalances } from '@/utils/CoFinance';
 import { useAccount } from '../RootLayout';
-import ConnectButton from '@/components/ConnectButton';
 import { FaWallet } from 'react-icons/fa';
 import { connectMetaMask } from '@/utils/wallet';
 
@@ -44,14 +43,14 @@ const Borrow: React.FC = () => {
             label: token.name,
             image: token.image,
           }))}
-          durationOptions={durationsData.durations.map(items => ({
-            value: String(items.value),
-            label: items.label,
+          durationOptions={durations.map(duration => ({
+            value: String(duration.value),
+            label: duration.label,
           }))}
           handleBorrowAmounts={async (amount) => {
             return { amount: 0 };
           }}
-          account={account || ''}
+          accounts={account || ''}
           provider={providerRef.current as ethers.BrowserProvider} />
       ),
     },
