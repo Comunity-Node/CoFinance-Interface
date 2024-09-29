@@ -24,7 +24,7 @@ interface CollateralProps {
 
 const BorrowTokens: React.FC<CollateralProps> = ({
     tokenOptions = [],
-    handleBorrowAmounts,
+    handleBorrowAmounts, 
 }) => {
     const [selectedBorrowToken, setSelectedBorrowToken] = useState<ImageSelect | null>(null);
     const [selectedCollateralToken, setSelectedCollateralToken] = useState<ImageSelect | null>(null);

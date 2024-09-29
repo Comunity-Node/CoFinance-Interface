@@ -144,7 +144,7 @@ function Staking() {
 
   const handleStakePool = async () => {
     if (!selectedPool || !stakingDurationPool) {
-      console.log('Pool or duration not selected'); // Debug message
+      console.log('Pool or duration not selected'); 
       return;
     }
   
