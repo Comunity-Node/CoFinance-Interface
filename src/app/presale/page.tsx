@@ -51,7 +51,7 @@ const Presale: React.FC = () => {
   // State to hold the currently selected presale pool
   const [selectedPool, setSelectedPool] = useState<PresalePool | null>(null);
 
-  const ActivePresale = ({ active }) => (
+  const ActivePresale = ({ active }: { active: PresalePool[] }) => (
     <div className="bg-[#141414] p-6 rounded-lg min-w-full">
       {active.length === 0 ? (
         <p className="text-white text-center">No presale available</p>
