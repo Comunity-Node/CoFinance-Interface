@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { SigningStargateClient } from '@cosmjs/stargate';
-import { Validator } from '../data/validator.json'; // Define your types or import them if they are defined elsewhere
+import { Validator } from '../data/validator.json'; 
 
 export const fetchStakingInfo = async (
   client: SigningStargateClient | null,
