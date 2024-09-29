@@ -1,13 +1,19 @@
 'use client';
-
 import React, { useState, useEffect, useRef } from 'react';
 import Select, { components } from 'react-select';
 import { ethers } from 'ethers';
 import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import '@sweetalert2/theme-dark/dark.css';
 import { Button } from '../../components/ui/moving-border';
 import { getIncentivizedPools } from '@/utils/Factory';
-import { getLiquidityToken } from '@/utils/CoFinance'; 
-import { getTokenInfo, getTokenBalance } from '@/utils/TokenUtils'; 
+import { getLiquidityToken, getStakingContract } from '@/utils/CoFinance'; 
+import { stakeTokens } from '@/utils/Staking';
+import { getTokenInfo, getTokenBalance,approveToken } from '@/utils/TokenUtils'; 
+
+
+const MySwal = withReactContent(Swal);
+
 
 const customStyles = {
   control: (base) => ({
@@ -50,6 +56,7 @@ const stakingDurations = [
   { value: 21, label: '21 Days' },
 ];
 
+
 function Staking() {
   const [selectedPool, setSelectedPool] = useState(null);
   const [amountPool, setAmountPool] = useState('');
@@ -84,6 +91,8 @@ function Staking() {
         const options = await Promise.all(
           poolAddresses.map(async (poolAddress) => {
             const liquidityToken = await getLiquidityToken(providerRef.current, poolAddress);
+            const stakingAddress = await getStakingContract(providerRef.current, poolAddress); 
+            console.log(stakingAddress);
             let tokenInfo = {};
             let balance = '0';
 
@@ -98,6 +107,7 @@ function Staking() {
               value: tokenInfo.value,
               label: tokenInfo.label,
               poolAddress,
+              stakingAddress, // Include staking address in the options
               balance: balance || '0',
               image: tokenInfo.image,
             };
@@ -133,31 +143,45 @@ function Staking() {
   };
 
   const handleStakePool = async () => {
-    if (selectedPool && stakingDurationPool) {
-      const baseApr = 5; 
-      setAprPool(calculateApr(stakingDurationPool.value, baseApr));
-      try {
-        console.log('Staking', amountPool, 'of', selectedPool.value, 'for', stakingDurationPool);
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        Swal.fire({
-          title: 'Success!',
-          text: `Staked ${amountPool} of ${selectedPool.label} for ${stakingDurationPool.label}.`,
-          icon: 'success',
-          confirmButtonText: 'Close',
-        });
-      } catch (error) {
-        console.error('Error staking:', error);
-        Swal.fire({
-          title: 'Error!',
-          text: 'There was an issue with your staking request.',
-          icon: 'error',
-          confirmButtonText: 'Close',
-        });
-      }
+    if (!selectedPool || !stakingDurationPool) {
+      console.log('Pool or duration not selected'); // Debug message
+      return;
+    }
+  
+    const baseApr = 5;
+    setAprPool(calculateApr(stakingDurationPool.value, baseApr));
+  
+    try {
+      await approveToken(providerRef.current, selectedPool.value, selectedPool.stakingAddress, amountPool.toString());
+      await stakeTokens(providerRef.current, selectedPool.stakingAddress, amountPool.toString());
+      MySwal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: `Staked ${amountPool} of ${selectedPool.label} for ${stakingDurationPool.label}.`,
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+        },
+      });
+      
+    } catch (error) {
+      console.error('Error staking:', error);
+      
+      // Show error alert if any error occurs
+     MySwal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'There was an issue with your staking request.',
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+        },
+      });
     }
   };
+  
+  
+
 
   return (
     <section className="min-h-screen animation-bounce bg-borrow bg-no-repeat bg-contain image-full text-center">
@@ -187,13 +211,15 @@ function Staking() {
                 placeholder="Amount"
                 className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
               />
+              {aprPool && <p className="text-white mt-4">Estimated APR: {aprPool}%</p>}
+              <p className="text-white mt-4">Available Balance: {balance}</p>
               <input 
                 type="range" 
                 min="0" 
                 max={balance} 
                 value={amountPool} 
                 onChange={(e) => setAmountPool(e.target.value)} 
-                className="range range-xs" // Apply your custom slider styles
+                className="range range-xs" 
               />
             </div>
           </div>
@@ -217,8 +243,6 @@ function Staking() {
           >
             Stake Pool
           </Button>
-          {aprPool && <p className="text-white mt-4">Estimated APR: {aprPool}%</p>}
-          <p className="text-white mt-4">Available Balance: {balance}</p>
         </div>
       </div>
     </section>

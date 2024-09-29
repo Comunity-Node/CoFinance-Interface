@@ -6,6 +6,7 @@ import { ethers } from 'ethers';
 import { getTokenBalance, approveToken } from '../../utils/TokenUtils';
 import { getPoolByPairs } from '../../utils/Factory'; 
 import { provideLiquidity } from '../../utils/CoFinance';
+import { WrapNative } from '@/utils/Wrapped';
 
 interface AddLiquidityModalProps {
   open: boolean;
@@ -13,7 +14,6 @@ interface AddLiquidityModalProps {
   tokenA: ImageSelect | null;
   tokenB: ImageSelect | null;
 }
-
 
 const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, tokenA, tokenB }) => {
   const [selectedTokenA, setSelectedTokenA] = useState<ImageSelect | null>(tokenA);
@@ -63,14 +63,19 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
     const fetchBalances = async () => {
       if (!providerRef.current || !account) return;
 
-      if (selectedTokenA) {
-        const balanceA = await getTokenBalance(providerRef.current, selectedTokenA.value, account);
-        setBalanceA(balanceA);
-      }
-      if (selectedTokenB) {
-        const balanceB = await getTokenBalance(providerRef.current, selectedTokenB.value, account);
-        setBalanceB(balanceB);
-      }
+      const fetchBalance = async (token: ImageSelect | null) => {
+        if (token.value === "0x10e6414ddea2e2be27e23584c651bc0a49e11e07") {
+          const balance = await providerRef.current.getBalance(account);
+          return ethers.formatEther(balance); 
+        }
+        return await getTokenBalance(providerRef.current, token.value, account);
+      };
+
+      const balanceA = await fetchBalance(selectedTokenA);
+      const balanceB = await fetchBalance(selectedTokenB);
+
+      setBalanceA(balanceA);
+      setBalanceB(balanceB);
     };
 
     fetchBalances();
@@ -89,8 +94,17 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
 
   const handleConfirm = async () => {
     if (!account || !selectedTokenA || !selectedTokenB || !poolAddressFromAPI || !providerRef.current) return;
-  
+
     try {
+      if (selectedTokenA.value === "0x10e6414ddea2e2be27e23584c651bc0a49e11e07") {
+        await WrapNative(providerRef.current, amountA.toString());
+        setAmountA(0); 
+      }
+      if (selectedTokenB.value === "0x10e6414ddea2e2be27e23584c651bc0a49e11e07") {
+        await WrapNative(providerRef.current, amountB.toString());
+        setAmountB(0); 
+      }
+      
       await approveToken(providerRef.current, selectedTokenA.value, poolAddressFromAPI, amountA.toString());
       await approveToken(providerRef.current, selectedTokenB.value, poolAddressFromAPI, amountB.toString());      
       await provideLiquidity(providerRef.current, poolAddressFromAPI, amountA.toString(), amountB.toString());
@@ -101,7 +115,6 @@ const AddLiquidityModal: React.FC<AddLiquidityModalProps> = ({ open, onClose, to
       console.error('Error during liquidity provision:', error);
     }
   };
-  
 
   if (!open) return null;
 

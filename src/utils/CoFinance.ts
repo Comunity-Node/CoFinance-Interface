@@ -1153,7 +1153,7 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
         console.error('Error depositing collateral:', error);
         throw error; 
     }
-};
+	};
 
   
   export const withdrawCollateral = async (provider: ethers.BrowserProvider, amount: string): Promise<void> => {
@@ -1328,6 +1328,17 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
         const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
         const liquidityToken = await contract.liquidityToken();
         return  liquidityToken ;
+    } catch (error) {
+        console.error('Error getting token addresses:', error);
+        throw error;
+    }
+  };
+
+  export const getStakingContract = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ stakingContract: string }> => {
+    try {
+        const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
+        const stakingContract = await contract.stakingContract();
+        return  stakingContract ;
     } catch (error) {
         console.error('Error getting token addresses:', error);
         throw error;

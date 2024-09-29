@@ -17,7 +17,7 @@ function Pools() {
   const [modalOpen, setModalOpen] = useState(false);
   const [liquidityTokenAddress, setLiquidityTokenAddress] = useState(null);
   const [addLiquidityModalOpen, setAddLiquidityModalOpen] = useState(false);
-  const [account, setAccount] = useState(null); // State for account
+  const [account, setAccount] = useState(null);
 
   useEffect(() => {
     const loadPools = async () => {
@@ -28,8 +28,8 @@ function Pools() {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const accountAddress = await signer.getAddress();
-        setAccount(accountAddress); // Set account state
-        console.log("Connected Account:", accountAddress); // Log account
+        setAccount(accountAddress);
+        console.log("Connected Account:", accountAddress);
 
         const poolAddresses = await getAllPools(provider);
         const incentivizedPoolAddresses = await getIncentivizedPools(provider);
@@ -65,6 +65,8 @@ function Pools() {
       const liquidity = await getTotalLiquidity(provider, address);
       const scaledTotalA = parseFloat(liquidity.totalA);
       const scaledTotalB = parseFloat(liquidity.totalB);
+      if (tokenAInfo.label === 'WXFI') tokenAInfo.label = 'XFI';
+      if (tokenBInfo.label === 'WXFI') tokenBInfo.label = 'XFI';
 
       return {
         address,

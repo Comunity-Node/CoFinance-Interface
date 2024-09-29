@@ -76,7 +76,7 @@ const Borrow: React.FC = () => {
       providerRef.current = new ethers.BrowserProvider(window.ethereum);
       const signer = await providerRef.current.getSigner();
       const accountAddress = await signer.getAddress();
-      setAccount(accountAddress); // Set account here properly
+      setAccount(accountAddress); 
     };
 
     loadAccount();
@@ -109,8 +109,6 @@ const Borrow: React.FC = () => {
     setAccount(null);
     setConnected(false);
   };
-
-  // Fix the CardConnectButton with return statement
   const CardConnectButton = () => (
     <div className="absolute text-center justify-center flex items-center z-50 mx-auto my-5" data-aos="fade-up">
       <div className=' card card-compact bg-[#141414] w-96 shadow-xl'>

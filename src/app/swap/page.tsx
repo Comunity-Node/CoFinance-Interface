@@ -13,7 +13,7 @@ import { swapTokens, previewSwap } from '@/utils/CoFinance';
 import { getPoolByPairs } from '@/utils/Factory';
 import { getTokenBalance, approveToken } from '../../utils/TokenUtils';
 import { CiWallet } from "react-icons/ci";
-import { useAccount } from '../RootLayout';
+import { WrapNative } from '@/utils/Wrapped';
 
 const MySwal = withReactContent(Swal);
 
@@ -24,7 +24,6 @@ const Swap: React.FC = () => {
     image: token.image,
   }));
 
-  // const { account } = useAccount();
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [account, setAccount] = useState<string | null>(null);
   const [fromToken, setFromToken] = useState<ImageSelect | null>(null);
@@ -112,7 +111,8 @@ const Swap: React.FC = () => {
 
     if (!fromAmount || fromAmount <= 0 || fromAmount > tokenBalance) {
       MySwal.fire({
-        icon: 'warning', title: 'Invalid Amount', text: 'Enter a valid amount to swap.', customClass: {
+        icon: 'warning', title: 'Invalid Amount', text: 'Enter a valid amount to swap.',
+        customClass: {
           popup: 'my-custom-popup',
           confirmButton: 'my-custom-confirm-button',
           cancelButton: 'my-custom-cancel-button',
@@ -122,7 +122,12 @@ const Swap: React.FC = () => {
     }
 
     try {
-      await approveToken(provider as ethers.BrowserProvider, fromToken.value, poolAddress, fromAmount.toString());
+      if (fromToken.value === '0x28cc5edd54b1e4565317c3e0cfab551926a4cd2a') {
+        await WrapNative(provider as ethers.BrowserProvider, fromAmount.toString());
+      } else {
+        await approveToken(provider as ethers.BrowserProvider, fromToken.value, poolAddress, fromAmount.toString());
+      }
+
       setIsSwap(true);
       await swapTokens(provider as ethers.BrowserProvider, poolAddress, fromToken.value, fromAmount.toString());
       MySwal.fire({
@@ -134,7 +139,8 @@ const Swap: React.FC = () => {
       });
     } catch (error) {
       MySwal.fire({
-        icon: 'error', title: 'Swap Failed', text: 'Error during swap.', customClass: {
+        icon: 'error', title: 'Swap Failed', text: 'Error during swap.',
+        customClass: {
           popup: 'my-custom-popup',
           confirmButton: 'my-custom-confirm-button',
           cancelButton: 'my-custom-cancel-button',
@@ -179,7 +185,7 @@ const Swap: React.FC = () => {
                 placeholder="0"
                 className="text-right w-full rounded-xl px-5 py-2 text-2xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
               />
-              <input type="range" min={0} max={tokenBalance == 0 ? 100 : tokenBalance} value={fromAmount || ''}
+              <input type="range" min={0} max={tokenBalance} value={fromAmount || 0}
                 onChange={handleAmountChange} className="range range-xs" />
             </div>
           </div>
