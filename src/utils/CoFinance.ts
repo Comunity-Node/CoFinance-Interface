@@ -1139,20 +1139,20 @@ export const previewSwap = async (
 		console.error('Error previewing swap:', error);
 		throw error;
 	}
-};
-
-export const depositCollateral = async (provider: ethers.BrowserProvider, poolAddress: string, tokenAddress: string, tokenAmount: string): Promise<void> => {
-	try {
-		const signer = await provider.getSigner();
-		const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
-		const amountInUnits = ethers.parseUnits(tokenAmount, 18);
-		const tx = await contractWithSigner.depositCollateral(tokenAddress, amountInUnits);
-		await tx.wait();
-		console.log('Collateral deposited:', tokenAddress, tokenAmount);
-	} catch (error) {
-		console.error('Error depositing collateral:', error);
-		throw error;
-	}
+  };
+  
+  export const depositCollateral = async (provider: ethers.BrowserProvider, poolAddress: string, tokenAddress: string, tokenAmount: string): Promise<void> => {
+    try {
+        const signer = await provider.getSigner(); 
+        const contractWithSigner = new ethers.Contract(poolAddress, COFINANCE_ABI, signer);
+        const amountInUnits = ethers.parseUnits(tokenAmount, 18);
+        const tx = await contractWithSigner.depositCollateral(tokenAddress, amountInUnits);
+        await tx.wait();
+        console.log('Collateral deposited:', tokenAddress, tokenAmount);
+    } catch (error) {
+        console.error('Error depositing collateral:', error);
+        throw error; 
+    }
 };
 
 
@@ -1269,37 +1269,17 @@ export const withdrawInterestFee = async (provider: ethers.BrowserProvider): Pro
 	}
 };
 
-// export const getTokenAddresses = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{
-// 	borrowTokenAddress(borrowTokenAddress: string): null; tokenA: string, tokenB: string
-// }> => {
-// 	try {
-// 		const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
-// 		const tokenA = await contract.tokenA();
-// 		const tokenB = await contract.tokenB();
-// 		return { tokenA, tokenB, borrowTokenAddress: (borrowTokenAddress: any) => borrowTokenAddress };
-// 	} catch (error) {
-// 		console.error('Error getting token addresses:', error);
-// 		throw error;
-// 	}
-// };
-
-export const getTokenAddresses = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{
-	tokenA: string;
-	tokenB: string;
-	borrowTokenAddress: string;
-}> => {
-	try {
-		const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
-		const tokenA = await contract.tokenA();
-		const tokenB = await contract.tokenB();
-		// Assuming borrowTokenAddress is one of these tokens, if it comes from elsewhere, adjust accordingly
-		return { tokenA, tokenB, borrowTokenAddress: tokenA }; // Adjust this logic as necessary
-	} catch (error) {
-		console.error('Error getting token addresses:', error);
-		throw error;
-	}
-};
-
+  export const getTokenAddresses = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ tokenA: string, tokenB: string }> => {
+    try {
+        const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
+        const tokenA = await contract.tokenA();
+        const tokenB = await contract.tokenB();
+        return { tokenA, tokenB };
+    } catch (error) {
+        console.error('Error getting token addresses:', error);
+        throw error;
+    }
+  };
 
 export const getUserCollateralBalances = async (provider: ethers.BrowserProvider, account: string): Promise<{ [poolAddress: string]: { collateralA: string, collateralB: string } }> => {
 	try {
@@ -1340,13 +1320,13 @@ export const getCollateral = async (provider: ethers.BrowserProvider, account: s
 	}
 };
 
-export const getLiquidityToken = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ liquidityToken: string }> => {
-	try {
-		const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
-		const liquidityToken = await contract.liquidityToken();
-		return liquidityToken;
-	} catch (error) {
-		console.error('Error getting token addresses:', error);
-		throw error;
-	}
-};
+  export const getLiquidityToken = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{ liquidityToken: string }> => {
+    try {
+        const contract = new ethers.Contract(poolAddress, COFINANCE_ABI, provider);
+        const liquidityToken = await contract.liquidityToken();
+        return  liquidityToken ;
+    } catch (error) {
+        console.error('Error getting token addresses:', error);
+        throw error;
+    }
+  };
