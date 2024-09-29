@@ -1269,7 +1269,7 @@ export const getTotalLiquidity = async (provider: ethers.BrowserProvider, poolAd
     }
   };
 
-  export const getTokenAddresses = async (provider: ethers.BrowserProvider, poolAddress: string, value: string): Promise<{
+  export const getTokenAddresses = async (provider: ethers.BrowserProvider, poolAddress: string): Promise<{
       collateralTokenAddress: SetStateAction<string | null>;
       borrowTokenAddress: SetStateAction<string | null>; tokenA: string, tokenB: string 
 }> => {

@@ -7,15 +7,15 @@ import { SelectList } from '@/types/SelectList';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { ethers } from 'ethers';
-import { getCollateral, getTokenAddresses, borrowTokens } from '../../utils/CoFinance'; 
+import { getCollateral, getTokenAddresses, borrowTokens } from '../../utils/CoFinance';
 import { getTokenBalance } from '../../utils/TokenUtils';
 import { getPoolByPairs } from '../../utils/Factory';
 import '@sweetalert2/theme-dark/dark.css';
 
 const MySwal = withReactContent(Swal);
 
-const SECONDS_IN_30_DAYS = 30 * 24 * 60 * 60; 
-const SECONDS_IN_90_DAYS = 90 * 24 * 60 * 60; 
+const SECONDS_IN_30_DAYS = 30 * 24 * 60 * 60;
+const SECONDS_IN_90_DAYS = 90 * 24 * 60 * 60;
 
 interface CollateralProps {
     tokenOptions?: ImageSelect[];
@@ -79,18 +79,27 @@ const BorrowTokens: React.FC<CollateralProps> = ({
 
         if (poolAddress) {
             try {
+                const addresses = await getTokenAddresses(providerRef.current, poolAddress);
+                console.log("Addresses : " + JSON.stringify(addresses));
+                setBorrowTokenAddress(selectedBorrowToken.value);
+                setCollateralTokenAddress(selectedCollateralToken.value);
+                console.log("Collateral Selected : " + collateralTokenAddress);
                 const balances = await getCollateral(providerRef.current, account, poolAddress);
+                console.log(balances);
                 const collateralA = balances.collateralA || '0';
                 const collateralB = balances.collateralB || '0';
-                setUserCollateralBalances({ [selectedCollateralToken.label]: collateralA });
-
-                const addresses = await getTokenAddresses(providerRef.current, selectedBorrowToken.value, selectedCollateralToken.value);
-                setBorrowTokenAddress(addresses.borrowTokenAddress);
-                setCollateralTokenAddress(addresses.collateralTokenAddress);
+                console.log('Collateral A:', collateralA);
+                console.log('Collateral B:', collateralB);
+                if (collateralTokenAddress?.toLowerCase() === addresses.tokenA.toLowerCase()) {
+                    setUserCollateralBalances({ [selectedCollateralToken.label]: collateralA });
+                } else {
+                    setUserCollateralBalances({ [selectedCollateralToken.label]: collateralB });
+                }
             } catch (error) {
                 console.error('Error fetching collateral balances:', error);
             }
         }
+
     };
 
     useEffect(() => {
@@ -99,7 +108,6 @@ const BorrowTokens: React.FC<CollateralProps> = ({
 
     const fetchBorrowTokenBalance = async (account: string) => {
         if (!providerRef.current || !selectedBorrowToken) return;
-
         const balance = await getTokenBalance(providerRef.current, selectedBorrowToken.value, account);
         setUserBorrowTokenBalance(balance);
     };
@@ -132,7 +140,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({
             });
             return;
         }
-    
+
         setIsBorrowing(true);
         try {
             console.log("Borrowing tokens with the following parameters:");
@@ -140,15 +148,15 @@ const BorrowTokens: React.FC<CollateralProps> = ({
             console.log("Borrow Amount:", borrowAmount);
             console.log("Borrow Token Address:", selectedBorrowToken.value);
             console.log("Duration (in seconds):", selectedDuration.value);
-            
+
             await borrowTokens(
-                providerRef.current!, 
+                providerRef.current!,
                 selectedPool,
                 borrowAmount.toString(),
                 selectedBorrowToken.value,
-                parseInt(selectedDuration.value) 
+                parseInt(selectedDuration.value)
             );
-    
+
             await MySwal.fire({
                 title: 'Borrow Successfully!',
                 html: `
@@ -202,22 +210,22 @@ const BorrowTokens: React.FC<CollateralProps> = ({
                         placeholder="0"
                         className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
                     />
-                    <input type="range" min={0} max={100} value={borrowAmount || ''}
+                    <input type="range" min={0} max={selectedCollateralToken ? userCollateralBalances?.[selectedCollateralToken.label] || 0 : 0} value={borrowAmount || ''}
                         onChange={(e) => setBorrowAmount(parseFloat(e.target.value) || 0)}
-                        className="range range-xs" />
+                        className="range range-xs" style={{ direction: 'ltr' }}  />
                 </div>
             </div>
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
                     placeholder='Choose Collateral Token'
-                    tokenOptions={defaultTokenOptions} 
+                    tokenOptions={defaultTokenOptions}
                     handleOnChange={(token) => handleTokenSelection(setSelectedCollateralToken, token)}
                     handleValue={selectedCollateralToken}
                     className="border-none hover:border-0 w-full px-0 py-2"
                 />
             </div>
             {selectedPool && userCollateralBalances && selectedCollateralToken && (
-                <div className="p-4 rounded-lg shadow-md"> 
+                <div className="p-4 rounded-lg shadow-md">
                     <div className="flex justify-between">
                         <div>
                             <strong>Available collateral {selectedCollateralToken.label}:</strong> {userCollateralBalances[selectedCollateralToken.label]}
