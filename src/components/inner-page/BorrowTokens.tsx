@@ -212,7 +212,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({
                     />
                     <input type="range" min={0} max={selectedCollateralToken ? userCollateralBalances?.[selectedCollateralToken.label] || 0 : 0} value={borrowAmount || ''}
                         onChange={(e) => setBorrowAmount(parseFloat(e.target.value) || 0)}
-                        className="range range-xs" style={{ direction: 'ltr' }}  />
+                        className="custom-slider"  />
                 </div>
             </div>
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">

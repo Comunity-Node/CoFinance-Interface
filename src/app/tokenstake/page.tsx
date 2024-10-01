@@ -11,6 +11,7 @@ import { IoCloseCircle } from "react-icons/io5";
 import { FaInfoCircle } from 'react-icons/fa';
 import CardAccountDetails from '@/components/inner-page/CardAccountDetails';
 import Modal from '@/components/Modal';
+import CardManagedStaked from '@/components/inner-page/CardManagedStaked';
 
 interface Validator {
   [x: string]: ReactNode;
@@ -35,19 +36,37 @@ function TokenStake() {
   const [error, setError] = useState<string | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const [selectedValidator, setSelectedValidator] = useState<Validator | null>(null);
-  const [stakeAmount, setStakeAmount] = useState<string>('');
-  const [unstakeAmount, setUnstakeAmount] = useState<string>('');
   const [showPopup, setShowPopup] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [chainid, use] = useState<string | null>(null);
   const [copySuccess] = useState<string | null>(null);
-  const [stakedAmount, setStakedAmount] = useState<string | null>(null);
+  const [stakedAmount, setStakedAmount] = useState<string>('');
+  const [unstakedAmount, setUnstakedAmount] = useState<string>('');
   const [stakedValidator, setStakedValidator] = useState<Validator | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isModalVisibleStaked, setModalVisibleStaked] = useState(false);
+  const [modalTitle, setModalTitle] = useState<string | null>(null);
+
+  const changeStakedAmount = (value: string) => {
+    setStakedAmount(value);
+  };
+
+  const changeUnstakedAmount = (value: string) => {
+    setUnstakedAmount(value);
+  };
 
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
 
+  const openModalStaked = (validator: Validator) => {
+    setModalVisibleStaked(true);
+    setModalTitle(validator.name || 'Unnamed Validator');
+
+  }
+
+  const closeModalStaked = () => {
+    setModalVisibleStaked(false);
+  }
 
   const popupRef = useRef<HTMLDivElement | null>(null);
 
@@ -78,9 +97,9 @@ function TokenStake() {
             const validator = validators.find(v => v.operator_address === validatorAddress);
 
             setStakedValidator(validator || null);
-            setStakedAmount(amount ? amount : '0');
+            setStakedAmount(amount ? amount : '');
           } else {
-            setStakedAmount('0');
+            setStakedAmount('');
             setStakedValidator(null);
           }
         } catch (err) {
@@ -124,6 +143,7 @@ function TokenStake() {
     const handleClickOutside = (event: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
         setShowPopup(false);
+        setModalTitle(null);
       }
     };
 
@@ -168,7 +188,6 @@ function TokenStake() {
     }
   };
 
-
   const disconnectWallet = () => {
     setClient(null);
     setAccount(null);
@@ -185,8 +204,8 @@ function TokenStake() {
     const rpcUrl = validator.rpcUrl || DEFAULT_RPC_URL;
 
     setSelectedValidator(validator);
-    setStakeAmount('');
-    setUnstakeAmount('');
+    setStakedAmount('');
+    setUnstakedAmount('');
 
     if (!window.getOfflineSigner || !window.getOfflineSigner(chainId)) {
       setError("Keplr Wallet is not available for the selected network");
@@ -202,6 +221,7 @@ function TokenStake() {
       if (accounts.length > 0) {
         setAccount(accounts[0]);
         setShowPopup(true);
+
       } else {
         setError("No accounts found after reconnecting to the selected network");
       }
@@ -221,7 +241,7 @@ function TokenStake() {
 
     if (!validChainIds.includes(chainId)) {
       try {
-        const amountToStake = parseFloat(stakeAmount);
+        const amountToStake = parseFloat(stakedAmount);
         if (isNaN(amountToStake) || amountToStake <= 0) {
           setError("Invalid stake amount");
           return;
@@ -265,14 +285,14 @@ function TokenStake() {
 
       try {
         const offlineSigner = window.getOfflineSigner(chainId);
-        //console.log(offlineSigner)
+        // console.log(offlineSigner)
         const newClient = await SigningStargateClient.connectWithSigner(rpcUrl, offlineSigner);
         console.log(newClient)
         setClient(newClient);
 
         const amount = {
           denom,
-          amount: (parseFloat(stakeAmount) * 1000000).toString(),
+          amount: (parseFloat(stakedAmount) * 1000000).toString(),
         };
 
         const fee: Fee = {
@@ -330,7 +350,7 @@ function TokenStake() {
     const denom = selectedValidator.denom || 'uosmo';
     const amount = {
       denom,
-      amount: (parseFloat(unstakeAmount) * 1000000).toString(),
+      amount: (parseFloat(unstakedAmount) * 1000000).toString(),
     };
 
     try {
@@ -471,7 +491,9 @@ function TokenStake() {
                         <tr
                           key={validator.operator_address}
                           className="hover:bg-[#070b0f] hover:text-[#141414] hover:rounded-lg transition cursor-pointer duration-300 ease-in-out"
-                          onClick={() => handleSelectValidator(validator)}>
+                          // onClick={() => handleSelectValidator(validator)}
+                          onClick={() => openModalStaked(validator)}
+                        >
                           <td className="p-4 text-left text-gray-200">{validator.name}</td>
                           <td className="p-4 text-right text-gray-200">{validator.APR}</td>
                           <td className="p-4 text-right text-gray-200">{validator.denom}</td>
@@ -484,40 +506,26 @@ function TokenStake() {
             </div>
           </div>
         </div>
-
-        {showPopup && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div ref={popupRef} className="bg-[#141414] p-6 rounded-lg shadow-lg max-w-md w-full">
-              <h2 className="text-xl font-semibold mb-4 text-white">Manage Staked</h2>
-              {selectedValidator && (
-                <div className="space-y-4">
-                  <p className="text-gray-300">Selected Validator: {selectedValidator.moniker}</p>
-                  <div className="flex space-x-4">
-                    <div className="w-1/2">
-                      <label className="block text-gray-300">Stake Amount</label>
-                      <input type="text" value={stakeAmount} onChange={(e) => setStakeAmount(e.target.value)} className="mt-1 p-2 border border-gray-500 rounded w-full bg-gray-700 text-white" />
-                    </div>
-                    <div className="w-1/2">
-                      <label className="block text-gray-300">Unstake Amount</label>
-                      <input type="text" value={unstakeAmount} onChange={(e) => setUnstakeAmount(e.target.value)} className="mt-1 p-2 border border-gray-500 rounded w-full bg-gray-700 text-white" />
-                    </div>
-                  </div>
-                  <div>
-                    <Button onClick={handleStake} className="bg-green-600 text-white">Stake</Button>
-                    <Button onClick={handleUnstake} className="bg-red-600 text-white">Unstake</Button>
-                    <Button onClick={handleClaimRewards} className="bg-yellow-600 text-white">Claim Rewards</Button>
-                  </div>
-                  {txHash && (
-                    <p className="text-green-400 mt-4">
-                      Transaction: <a href={`https://www.mintscan.io/osmosis-testnet/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="underline">success</a>
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
+      {/* {showPopup && ( */}
+      {/* Modal */}
+      <Modal
+        isVisible={isModalVisibleStaked}
+        onClose={closeModalStaked}
+        title={<span>{modalTitle}</span>}
+      >
+        <CardManagedStaked
+          selectedValidator={selectedValidator}
+          stakedAmount={stakedAmount ? stakedAmount : ''}
+          unstakedAmount={unstakedAmount ? unstakedAmount : ''}
+          handleClaimRewards={() => handleClaimRewards}
+          handleStake={() => handleStake}
+          handleUnstake={() => handleUnstake}
+          changeStakedAmount={setStakedAmount}
+          changeUnstakedAmount={setUnstakedAmount}
+          txHash={txHash || ''} />
+      </Modal>
+      {/* )} */}
 
       {/* Modal */}
       <Modal
