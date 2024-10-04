@@ -11,6 +11,7 @@ import { getCollateral, getTokenAddresses, borrowTokens } from '../../utils/CoFi
 import { getTokenBalance } from '../../utils/TokenUtils';
 import { getPoolByPairs } from '../../utils/Factory';
 import '@sweetalert2/theme-dark/dark.css';
+import { FaMoneyBill, FaMoneyCheck } from 'react-icons/fa';
 
 const MySwal = withReactContent(Swal);
 
@@ -24,7 +25,7 @@ interface CollateralProps {
 
 const BorrowTokens: React.FC<CollateralProps> = ({
     tokenOptions = [],
-    handleBorrowAmounts, 
+    handleBorrowAmounts,
 }) => {
     const [selectedBorrowToken, setSelectedBorrowToken] = useState<ImageSelect | null>(null);
     const [selectedCollateralToken, setSelectedCollateralToken] = useState<ImageSelect | null>(null);
@@ -193,7 +194,17 @@ const BorrowTokens: React.FC<CollateralProps> = ({
     };
 
     return (
-        <div className='space-y-4 py-4 h-full'>
+        <div className='space-y-4 py-4 h-96'>
+            {selectedPool && userCollateralBalances && selectedCollateralToken && (
+            <div role="alert" className="alert shadow-lg">
+                <FaMoneyCheck />
+                <div>
+                    <h3 className="font-bold">Available Colateral</h3>
+                    <div className="text-xs">{selectedCollateralToken?.label}</div>
+                </div>
+                <button className="btn btn-sm">{selectedCollateralToken ? userCollateralBalances?.[selectedCollateralToken.label] || 0 : 0}</button>
+            </div>
+            )}
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
                     placeholder='Choose Tokens to Borrow'
@@ -212,7 +223,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({
                     />
                     <input type="range" min={0} max={selectedCollateralToken ? userCollateralBalances?.[selectedCollateralToken.label] || 0 : 0} value={borrowAmount || ''}
                         onChange={(e) => setBorrowAmount(parseFloat(e.target.value) || 0)}
-                        className="custom-slider"  />
+                        className="custom-slider" />
                 </div>
             </div>
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
@@ -223,17 +234,6 @@ const BorrowTokens: React.FC<CollateralProps> = ({
                     handleValue={selectedCollateralToken}
                     className="border-none hover:border-0 w-full px-0 py-2"
                 />
-            </div>
-            {selectedPool && userCollateralBalances && selectedCollateralToken && (
-                <div className="p-4 rounded-lg shadow-md">
-                    <div className="flex justify-between">
-                        <div>
-                            <strong>Available collateral {selectedCollateralToken.label}:</strong> {userCollateralBalances[selectedCollateralToken.label]}
-                        </div>
-                    </div>
-                </div>
-            )}
-            <div className="w-full p-2">
                 <CustomSelectSearch
                     placeholder='Choose Durations'
                     tokenOptions={durationList}

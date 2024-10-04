@@ -69,6 +69,7 @@ interface CustomSelectSearchProps {
     handleValue: any;
     className: string;
     placeholder: string;
+    onInputChange?: (inputValue: string) => void; 
 }
 
 const CustomSelectSearch: React.FC<CustomSelectSearchProps> = ({
@@ -77,6 +78,7 @@ const CustomSelectSearch: React.FC<CustomSelectSearchProps> = ({
     handleValue,
     className,
     placeholder,
+    onInputChange
 }) => {
     return (
         <div className="w-full">
@@ -88,6 +90,8 @@ const CustomSelectSearch: React.FC<CustomSelectSearchProps> = ({
                 getOptionLabel={(option) => option.label}
                 getOptionValue={(option) => option.value}
                 styles={customStyles}
+                onInputChange={onInputChange}
+                className={className}
                 components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
                 placeholder={placeholder}
             />

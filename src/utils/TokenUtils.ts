@@ -279,6 +279,8 @@ const ERC_20ABI = [
 ]
 
 interface TokenInfo {
+  name: string;
+  address: string;
   value: string;
   label: string;
   image: string;

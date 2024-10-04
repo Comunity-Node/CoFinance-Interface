@@ -8,8 +8,8 @@ const Footer = () => {
       <aside>
         <img src="/logo-new.png" width={96} alt="" />
         <p className='leading-normal'>
-          <span className='text-2xl font-bold text-white'>Co-Finance</span>
-          <br />
+          {/* <span className='text-2xl font-bold text-white'>Co-Finance</span> */}
+          {/* <br /> */}
           <span className='font-semibold'> DeFi Platform Service Enchancment</span> for who brave enough to break <br />the decentralized freedoms.
         </p>
       </aside>
@@ -23,8 +23,6 @@ const Footer = () => {
         <h6 className="footer-title">Earn</h6>
         <a className="link link-hover">Pool</a>
         <a className="link link-hover">Staking Pools</a>
-        <a className="link link-hover">Token Staking</a>
-        <a className="link link-hover">Faucet</a>
       </nav>
       <nav>
         <h6 className="footer-title">Our Offices</h6>

@@ -10,7 +10,6 @@
     {
         "name": "Staking LP",
         "description": "Unlock the full potential of your assets with Staking LP. Our innovative incentive pools are designed to maximize your rewards as a liquidity provider. By staking your assets, you not only earn additional reward tokens but also contribute to a robust and dynamic liquidity ecosystem. Staking LP integrates advanced mechanisms to ensure optimal returns, offering a compelling opportunity for those looking to enhance their earnings in the decentralized finance landscape.",
-        
         "website": "/staking",
         "category": "Earn",
         "image" : "/staking-bg.svg"
@@ -18,7 +17,6 @@
     {
         "name": "Provide Liquidity",
         "description": "Step into a new era of financial empowerment with our Provide Liquidity framework. Designed for those who wish to capitalize on the decentralized finance revolution, this platform allows you to contribute liquidity and gain significant rewards in return. By participating in our liquidity pools, you play a vital role in the stability and efficiency of the decentralized ecosystem, while enjoying the financial freedom and benefits that come with it. Explore the future of liquidity provision and discover how it can transform your financial strategy.",
-        
         "website": "/pools",
         "category": "Earn",
         "image" : "/liquidity-bg.svg"

@@ -4,7 +4,7 @@ import CreatableSelect from 'react-select/creatable';
 import tokens from '../../data/token.json';
 import { Button } from '../../components/ui/moving-border';
 import { getTokenInfo } from '../../utils/TokenUtils';
-import { createPool } from '../../utils/Factory'; 
+import { createPool } from '../../utils/Factory';
 import { ethers } from 'ethers';
 import { components } from 'react-select';
 
@@ -19,28 +19,28 @@ const promptMetaMaskSign = async (message: string): Promise<string> => {
 };
 
 const customStyles = {
-  control: (base) => ({
+  control: (base: any) => ({
     ...base,
     background: 'rgba(0, 0, 0, 0.7)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
     color: 'white',
   }),
-  menu: (base) => ({
+  menu: (base: any) => ({
     ...base,
     background: 'rgba(0, 0, 0, 0.7)',
   }),
-  option: (base, { isFocused }) => ({
+  option: (base: any, { isFocused }: any) => ({
     ...base,
     background: isFocused ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
     color: 'white',
   }),
-  singleValue: (base) => ({
+  singleValue: (base: any) => ({
     ...base,
     color: 'white',
   }),
 };
 
-const CustomOption = (props) => (
+const CustomOption = (props: any) => (
   <components.Option {...props}>
     <div className="flex items-center">
       <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2 rounded-full" />
@@ -62,11 +62,12 @@ function AddPool() {
     image: token.image,
   })));
 
-  const handleAddCustomOption = async (inputValue, setSelectedOption) => {
+  const handleAddCustomOption = async (inputValue: string, setSelectedOption: any) => {
     if (ethers.isAddress(inputValue)) {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const tokenInfo = await getTokenInfo(provider, inputValue);
       if (tokenInfo) {
+        console.log("Token Info : " + tokenInfo);
         setTokenOptions((prevOptions) => [...prevOptions, tokenInfo]);
         setSelectedOption(tokenInfo);
       } else {

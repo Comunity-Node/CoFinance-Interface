@@ -163,7 +163,7 @@ const Swap: React.FC = () => {
     <section className="min-h-screen bg-trade bg-no-repeat bg-contain">
       <div className="pt-40 px-96 space-y-3 flex justify-center">
         <div className="bg-[#141414] rounded-xl p-6 space-y-4 max-w-xl">
-          <h1 className="text-3xl font-semibold text-white my-3 text-center">Swap Tokens</h1>
+          <h1 className="text-3xl font-semibold text-white my-3 text-center">Swap</h1>
           <div className="flex items-center justify-between">
             <p className='text-gray-500 text-md uppercase'>From</p>
             <div className="flex items-center">
@@ -186,7 +186,7 @@ const Swap: React.FC = () => {
                 className="text-right w-full rounded-xl px-5 py-2 text-2xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
               />
               <input type="range" min={0} max={tokenBalance} value={fromAmount || 0}
-                onChange={handleAmountChange} className="range range-xs" />
+                onChange={handleAmountChange} className="custom-slider" />
             </div>
           </div>
 

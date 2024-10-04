@@ -58,7 +58,7 @@ const config: Config = {
         rubik: ['Rubik', 'sans-serif'], // Add Rubik font family
       },
       backgroundImage: {
-        'explore': 'url(/explore.svg)',
+        'explore': 'url(/redesign/explore.svg)',
         'blur-hero': 'url(/redesign/Hero.png)',
         'portfolio': 'url(/redesign/Cubic.png)',
         'choose-us': 'url(/redesign/Sphere.png)',
@@ -71,7 +71,7 @@ const config: Config = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        // 'custom-linier-gradient': 'radial-gradient(100% 173% at 0 0, rgba(250,178,239,.45) 0%, rgba(235,38,235,.36) 18%, rgba(178,38,155,.16) 40%, rgba(22,15,56,0) 60%), linear-gradient(188deg, #140f34, #140f3400)',
+        'custom-linier-gradient-purple': 'radial-gradient(100% 173% at 0 0, rgba(250,178,239,.45) 0%, rgba(235,38,235,.36) 18%, rgba(178,38,155,.16) 40%, rgba(22,15,56,0) 60%), linear-gradient(188deg, #140f34, #140f3400)',
         'custom-radial-gradient': 'radial-gradient(102.12% 96.05% at 90.28% 96.15%, rgba(25, 42, 86,1.0) 0%, rgba(15,9,45,0) 100%)',
         'custom-linear-gradient': 'linear-gradient(122.29deg, rgba(0, 0, 0, 1) 0%, rgba(25, 42, 86,1.0) 45.53%, rgba(101, 101, 101, 0) 100%)',
       },
