@@ -1,70 +1,56 @@
 'use client';
+import { url } from "inspector";
 import { HoverEffect } from "./ui/card-hover-effect";
 
 // Sample token data; replace with actual token data source
 const featuredTokens = [
     {
-        image: 'https://www.logo.wine/a/logo/Ethereum/Ethereum-Logo.wine.svg',
-        name: 'Ethereum',
-        description: 'A decentralized platform that enables smart contracts and decentralized applications (dApps) to be built and run without any downtime, fraud, control, or interference from a third party.',
-        slug: 'ethereum',
-        isFeatured: true,
-    },
-    {
-        image: 'https://global.discourse-cdn.com/standard11/uploads/scroll2/original/2X/3/3bc70fd653f9c50abbb41b7568e549535f768fcc.png',
-        name: 'Scroll',
-        description: 'A blockchain platform for smart contracts, aiming to provide a more secure and scalable infrastructure for decentralized applications and crypto-assets.',
-        slug: 'scroll',
-        isFeatured: true,
-    },
-    {
-        image: 'https://s3-ap-southeast-2.amazonaws.com/www.cryptoknowmics.com/airdrops/SWTR_LOGO_SYMBOL_PNG.png',
-        name: 'Swisstronik',
-        description: 'An innovative blockchain project focusing on scalable smart contract deployment and integration with EVM-compatible chains.',
-        slug: 'swisstronik',
-        isFeatured: true,
-    },
-    {
-        image: 'https://evm.planq.network/og-image.png',
-        name: 'Planq Network',
-        description: 'A decentralized network focused on secure and scalable cross-chain interactions and decentralized finance applications.',
-        slug: 'planq',
-        isFeatured: true,
-    },
-    {
-        image: 'https://altcoinsbox.com/wp-content/uploads/2023/02/base-logo-in-blue.webp',
-        name: 'Base',
-        description: 'A high-performance blockchain supporting decentralized applications and crypto-currencies with high throughput and low transaction costs.',
-        slug: 'base',
-        isFeatured: true,
-    },
-    {
-        image: 'https://images.prismic.io/uphold/3f0371cb-ed69-4a01-84cb-8b9c2a814421_ORAI%402x.png?auto=compress,format',
-        name: 'Orichain',
-        description: 'A platform for building and deploying decentralized applications and custom blockchain networks, aiming for high scalability and low latency.',
-        slug: 'orichain',
-        isFeatured: true,
-    },
-    {
-        image: 'https://i0.wp.com/www.followchain.org/wp-content/uploads/2024/03/icons8-bnb-330.png?fit=330%2C330&ssl=1',
-        name: 'Binance Smart Chain',
-        description: 'A self-amending blockchain that provides a secure and scalable infrastructure for smart contracts and decentralized applications.',
-        slug: 'bsc',
-        isFeatured: true,
-    },
-    {
         image: 'https://miro.medium.com/v2/resize:fit:256/1*jTN3cYGlobHuPdnhu2lYhg.png',
         name: 'Cross Finance',
-        description: 'A self-amending blockchain that provides a secure and scalable infrastructure for smart contracts and decentralized applications.',
-        slug: 'cross-finance',
+        description: 'Explore the decentralized infrastructure of services built on CrossFi Chain’s own L1 blockchain, synthesizing the advantages of traditional financial instruments with the security and transparency of blockchain solutions.',
+        slug: 'crossfi',
         isFeatured: true,
+        url: 'https://crossfi.org/'
     },
     {
-        image: 'https://cdn-icons-png.freepik.com/512/12114/12114233.png',
-        name: 'Polygon',
-        description: 'A self-amending blockchain that provides a secure and scalable infrastructure for smart contracts and decentralized applications.',
-        slug: 'polygon',
+        image: 'https://s2.coinmarketcap.com/static/img/coins/200x200/31525.png',
+        name: 'Taiko',
+        description: 'This is a Block Explorer and Analytics Platform for Taiko Mainnet.',
+        slug: 'taiko',
         isFeatured: true,
+        url: 'https://taikoscan.io/'
+    },
+    {
+        image: 'https://fineproxy.org/wp-content/uploads/2023/08/Binance-Smart-Chain-logo-1-2048x2048.png',
+        name: 'Binance Smart Chain',
+        description: 'Harnessing Decentralization to Make the Impossible Possible',
+        slug: 'binance',
+        isFeatured: true,
+        url: 'https://crossfi.org/'
+    },
+    {
+        image: 'https://pbs.twimg.com/profile_images/1630871073917894659/LbAxXi_V_400x400.jpg',
+        name: 'Swisstronik',
+        description: 'Swisstronik is an identity-based hybrid blockchain ecosystem. It lets Web 3.0 and traditional companies build KYC, AML and DPR-compliant applications with enhanced data privacy.',
+        slug: 'swisstronik',
+        isFeatured: true,
+        url: 'https://ind.swisstronik.com/'
+    },
+    {
+        image: 'https://planq.network/_next/image?url=https%3A%2F%2Fcdn.builder.io%2Fapi%2Fv1%2Fimage%2Fassets%252F9770b285ecd94682a83d82643e538cdf%252F352051f7ea1344578a069ae40f99d9d1&w=256&q=75',
+        name: 'Planq Network',
+        description: 'Planq network opens up the full blockchain potential of your phone with easy accessibility.',
+        slug: 'planq',
+        isFeatured: true,
+        url: 'https://planq.network/'
+    },
+    {
+        image: 'https://s3.coinmarketcap.com/static-gravity/image/992744cfbd5e40f5920018ee7a830b98.png',
+        name: 'Sei Network',
+        description: 'Pushing the boundaries of blockchain technology through open source development, Sei stands to unlock a brand new design space for consumer facing applications.',
+        slug: 'sei',
+        isFeatured: true,
+        url: 'https://www.sei.io/'
     },
 ];
 
@@ -83,7 +69,7 @@ function UpcomingTokens() {
                                 title: token.name,
                                 img: token.image,
                                 description: token.description,
-                                link: `/tokens/${token.slug}`,
+                                link: `${token.url}`,
                                 className: "bg-black bg-opacity-50 backdrop-filter backdrop-blur-lg shadow-lg border border-gray-700 rounded-lg hover:bg-opacity-70 transition duration-200 ease-in-out"
                             }
                         ))}

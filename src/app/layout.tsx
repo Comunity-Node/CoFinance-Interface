@@ -19,7 +19,7 @@ export default function Layout({ children, title }: LayoutProps) {
       once: true,      
     });
     // Set the document title dynamically
-    const pageTitle = title ? `${title} | Co-Finance` : 'Co-Finance';
+    const pageTitle = title ? `${title} | CoFinance` : 'CoFinance';
     document.title = pageTitle;
   }, [title]);
 

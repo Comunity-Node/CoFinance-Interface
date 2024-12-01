@@ -11,7 +11,9 @@ const Navbar = () => {
     return (
         <div className="navbar fixed bg-black z-50 py-5">
             <div className="navbar-start">
-                <Link href={"/"} className="btn btn-ghost text-xl font-normal font-rubik">CoFinance</Link>
+                <Link href={"/"} className="btn btn-ghost text-xl font-normal font-rubik">
+                <img src="/logo-new.png" width={96} alt="" />
+                </Link>
             </div>
             <div className="navbar-center space-x-10 bg-transparent font-normal">
                 <ul className="menu menu-horizontal px-1 space-x-8 font-semibold text-md">
@@ -32,6 +34,7 @@ const Navbar = () => {
                                     <div className="space-y-2">
                                         <p className="text-gray-500 font-normal mb-2">Extras</p>
                                         <HoveredLink href="/faucet">Faucet</HoveredLink>
+                                        <HoveredLink href="/presale">Presale</HoveredLink>
                                     </div>
                                 </div>
                                 <div className="flex w-full flex-col px-2">

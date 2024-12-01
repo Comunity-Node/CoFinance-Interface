@@ -11,6 +11,7 @@ import { getPoolByPairs } from '@/utils/Factory';
 import { depositCollateral } from '@/utils/CoFinance';
 import '@sweetalert2/theme-dark/dark.css';
 import { CiWallet } from 'react-icons/ci';
+import { FaPassport } from 'react-icons/fa';
 
 const MySwal = withReactContent(Swal);
 
@@ -180,12 +181,13 @@ const Collateral: React.FC<CollateralProps> = ({ tokenOptions = [], borrowedToke
 
     return (
         <div className='space-y-4 py-4 h-full'>
-            <div className="flex items-center justify-between px-5">
-                <p className='text-gray-500 text-md uppercase'></p>
-                <div className="flex items-center">
-                    <CiWallet />
-                    <p className="text-gray-500 text-lg ms-2"> <strong>{userBalance}</strong></p>
+            <div role="alert" className="alert shadow-lg">
+                <FaPassport />
+                <div>
+                    <h3 className="font-bold">Pool Address :</h3>
+                    <div className="text-lg">{poolAddress ? poolAddress : '-'}</div>
                 </div>
+                <button className="btn btn-sm"><CiWallet /><strong>{userBalance}</strong></button>
             </div>
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
@@ -204,7 +206,7 @@ const Collateral: React.FC<CollateralProps> = ({ tokenOptions = [], borrowedToke
                         className="text-right w-full rounded-xl p-5 text-3xl bg-transparent focus:border-0 text-white placeholder:text-gray-600"
                     />
                     <input type="range" min={0} max={parseFloat(userBalance) == 0 ? 100 : userBalance} value={collateralAmount || ''}
-                        onChange={handleInputChange} className="range range-xs" />
+                        onChange={handleInputChange} className="" />
                 </div>
             </div>
 
@@ -218,18 +220,18 @@ const Collateral: React.FC<CollateralProps> = ({ tokenOptions = [], borrowedToke
                 />
             </div>
 
-            {poolAddress && (
-                <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
-                    <span className="text-white">Pool Address: {poolAddress}</span>
-                </div>
-            )}
-
             <div className="w-full text-end rounded-lg p-1 bg-[#bdc3c7]">
                 <button
-                    className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full"
+                    className={`btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full ${loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     onClick={onDepositCollateral}
                 >
-                    Deposit <MdOutlineArrowOutward />
+                    {loading ? (
+                        <div className="flex items-center justify-center w-full">
+                            <span className="loading loading-bars loading-sm"></span>
+                        </div>
+                    ) : (
+                        <>Deposit <MdOutlineArrowOutward /></>
+                    )}
                 </button>
             </div>
 

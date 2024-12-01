@@ -44,11 +44,12 @@
     "react-select-search": "^4.1.7",
     "sass": "^1.78.0",
     "simplex-noise": "^4.0.2",
-    "sweetalert2": "^11.14.0",
+    "sweetalert2": "^11.6.13",
     "sweetalert2-react-content": "^5.0.7",
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
+    "@types/aos": "^3.0.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
