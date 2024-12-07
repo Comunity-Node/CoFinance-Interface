@@ -11,12 +11,19 @@ import { useAccount } from '../RootLayout';
 import { FaWallet } from 'react-icons/fa';
 import { connectMetaMask } from '@/utils/wallet';
 import BorrowCard from '@/components/inner-page/BorrowCard';
+import WalletOption from '../../components/WalletOption';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import '@sweetalert2/theme-dark/dark.css';
+const MySwal = withReactContent(Swal);
 
 const Borrow: React.FC = () => {
   const { account, setAccount } = useAccount();
   const [connected, setConnected] = React.useState<boolean>(!!account);
   const [collateralBalance, setCollateralBalance] = useState<number>(0);
   const providerRef = useRef<ethers.BrowserProvider | null>(null);
+  const [loading, setLoading] = useState(false);
+
 
   const collateralList = [
     {
@@ -212,25 +219,112 @@ const Borrow: React.FC = () => {
   }, [account]);
 
 
-  const handleConnectMetaMask = async () => {
-    try {
-      const address = await connectMetaMask();
-      if (address) {
-        console.log(address);
-        setAccount(address);
-        setConnected(true);
-      } else {
-        console.error("Failed to connect MetaMask.");
-      }
-    } catch (err) {
-      console.error("Failed to connect MetaMask:", err);
+  const openModal = () => {
+    const modal = document.getElementById('my_modal_2') as HTMLDialogElement;
+    modal?.showModal();
+  };
+
+  const closeModal = () => {
+    const modal = document.getElementById('my_modal_2') as HTMLDialogElement;
+    if (modal && typeof modal.close === 'function') {
+      modal.close();
+    } else {
+      console.error('Modal element not found or close() method is not available.');
     }
   };
 
-  const handleDisconnectWallet = () => {
-    setAccount(null);
-    setConnected(false);
+  const handleConnectMetaMask = async () => {
+    setLoading(true);
+    try {
+      // Wait for 3 seconds before proceeding with the MetaMask connection
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      // After 3 seconds, try connecting to MetaMask
+      const address = await connectMetaMask();
+
+      if (address) {
+        console.log('Connected to MetaMask with address:', address);
+        setAccount(address);
+        setConnected(true);
+        closeModal();
+
+        await MySwal.fire({
+          icon: 'success',
+          title: 'Connected',
+          text: 'Your wallet is connected!',
+          customClass: {
+            popup: 'my-custom-popup',
+            confirmButton: 'my-custom-confirm-button',
+            cancelButton: 'my-custom-cancel-button',
+          },
+        });
+
+        return;
+      } else {
+        console.error('Failed to connect MetaMask.');
+        closeModal();
+
+        await MySwal.fire({
+          icon: 'error',
+          title: 'Connection Failed!',
+          text: 'Your wallet is not connected!',
+          customClass: {
+            popup: 'my-custom-popup',
+            confirmButton: 'my-custom-confirm-button',
+            cancelButton: 'my-custom-cancel-button',
+          },
+        });
+
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to connect MetaMask:', err);
+      closeModal();
+
+      await MySwal.fire({
+        icon: 'warning',
+        title: 'Connection Failed!',
+        text: `An error occurred: ${err}`,
+        customClass: {
+          popup: 'my-custom-popup',
+          confirmButton: 'my-custom-confirm-button',
+          cancelButton: 'my-custom-cancel-button',
+        },
+      });
+
+      return;
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const walletOptions = [
+    {
+      name: "Metamask",
+      img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/2048px-MetaMask_Fox.svg.png",
+      onClick: handleConnectMetaMask,
+      disabled: false,
+      soon: false,
+      loading: loading,
+    },
+    {
+      name: "Keplr",
+      img: "https://store-images.s-microsoft.com/image/apps.33644.b30b59e9-066d-4218-b91a-e9a076c2efde.90c13d55-8d3a-4b0f-95b5-9883c3c38008.c3300503-05e8-4957-ade2-1653e88f0584",
+      onClick: () => alert("WalletConnect clicked!"),
+      disabled: true,
+      soon: true,
+      loading: false,
+    },
+    {
+      name: "Trust Wallet",
+      img: "https://vectorseek.com/wp-content/uploads/2024/07/Trust-Wallet-Shield-Logo-Vector-Logo-Vector.svg-.png",
+      onClick: () => alert("Coming Soon clicked!"),
+      disabled: true,
+      soon: true,
+      loading: false,
+    },
+  ];
+
   const CardConnectButton = () => (
     <div className="absolute text-center justify-center flex items-center z-50" data-aos="fade-up">
       <div className='rounded-lg bg-[#141414] w-96 shadow-xl'>
@@ -243,7 +337,7 @@ const Borrow: React.FC = () => {
           <p>Please connect your wallet to use the platform features.</p>
           <div className="card-actions justify-end">
             <div className="w-full text-end rounded-lg p-1 bg-[#bdc3c7]">
-              <button onClick={connected ? handleDisconnectWallet : handleConnectMetaMask} className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full">
+              <button onClick={openModal} className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full">
                 <FaWallet className="mr-2" /> Connect Wallet
               </button>
             </div>
@@ -269,7 +363,39 @@ const Borrow: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* Modal Dialog Connect Wallet */}
+      <dialog id="my_modal_2" className="modal z-10">
+        <div className="bg-[#141414] modal-box space-y-2">
+          <h3 className="font-semibold text-2xl">{connected ? "Your" : "Connect"} Wallet</h3>
+          <div className="w-full bg-transparent rounded-lg pt-5">
+            <ul className={`menu menu-lg ${connected ? 'bg-transparent border-gray-700 border-2 rounded-xl' : 'bg-[#141414]'} rounded-box w-full`}>
+              {walletOptions.map((wallet, index) => (
+                <WalletOption
+                  key={index}
+                  img={wallet.img}
+                  name={wallet.name}
+                  onClick={wallet.onClick}
+                  disabled={wallet.disabled}
+                  soon={wallet.soon}
+                  loading={wallet.loading}
+                />
+              ))}
+            </ul>
+            <footer className="footer bg-transparent text-neutral-content items-center px-4 pt-4 justify-center">
+              <aside className="grid-flow-col items-center">
+                <p>Powered By </p>
+                <img src="/logo-new.png" className='w-20' alt="" />
+              </aside>
+            </footer>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </section>
+
+
   );
 };
 
