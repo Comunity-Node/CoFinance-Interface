@@ -39,14 +39,14 @@ const defiServiceContent = [
 function WhyChooseUs() {
     return (
         <section className="p-0">
-            <div className="flex items-center justify-center w-screen space-x-10 bg-choose-us bg-contain bg-no-repeat">
-                <div className="max-w-2xl text-start space-y-4 px-5" data-aos="fade-right">
+            <div className="flex items-center flex-col lg:flex-row justify-center w-screen lg:space-x-10 bg-choose-us bg-contain bg-no-repeat">
+                <div className="w-full lg:max-w-2xl text-start space-y-4 px-4 lg:px-5" data-aos="fade-right">
                     <p className="text-5xl font-extrabold">Be Part of the Open
                         Economy of the Future.</p>
                     <p className="text-md font-normal ps-1 text-gray-200">Lorem ipsum sit dolor amet.</p>
                     <button className="btn bg-transparent border-none hover:bg-transparent ps-1 hover:text-gray-200 text-2xl font-normal px-0 py-2 text-white shadow-none">Learn<MdOutlineArrowOutward /></button>
                 </div>
-                <div className="py-10 px-40 max-w-6xl">
+                <div className="py-10 px-4 lg:px-40 w-full lg:max-w-6xl">
                     <div className="space-y-4" data-aos="fade-up">
                         {defiServiceContent.map((item, index) => (
                             <div key={index}>

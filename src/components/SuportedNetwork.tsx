@@ -56,7 +56,7 @@ const featuredTokens = [
 
 function UpcomingTokens() {
     return (
-        <section className="py-20">
+        <section className="py-20 lg:px-0 px-4">
             <div className="relative max-w-7xl mx-auto" data-aos="fade-up">
                 <div className="text-center">
                     <p className='text-gray-600 text-xl uppercase'>Supports</p>

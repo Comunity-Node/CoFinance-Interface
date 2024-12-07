@@ -7,7 +7,7 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen max-w-screen overscroll-x-none">
       <HeroSection />
       <PromotionBanner />
       <AppsProject />

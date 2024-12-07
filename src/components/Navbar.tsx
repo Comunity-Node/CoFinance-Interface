@@ -12,7 +12,7 @@ const Navbar = () => {
         <div className="navbar fixed bg-black z-50 py-5">
             <div className="navbar-start">
                 <Link href={"/"} className="btn btn-ghost text-xl font-normal font-rubik">
-                <img src="/logo-new.png" width={96} alt="" />
+                    <img src="/logo-new.png" width={96} alt="" />
                 </Link>
             </div>
             <div className="navbar-center space-x-10 bg-transparent font-normal">
@@ -45,9 +45,15 @@ const Navbar = () => {
                                         <p className="text-gray-300 font-medium">Connect With Us</p>
                                     </div>
                                     <div className="flex items-center space-x-4 ">
-                                        <FaDiscord className="cursor-pointer" href="" />
-                                        <FaXTwitter className="cursor-pointer" href="" />
-                                        <FaTelegram className="cursor-pointer" href="" />
+                                        <Link target="_blank" href={"https://x.com/cofinancedefi"}>
+                                            <FaDiscord className="cursor-pointer" />
+                                        </Link>
+                                        <Link target="_blank" href={"https://x.com/cofinancedefi"}>
+                                            <FaXTwitter className="cursor-pointer" />
+                                        </Link>
+                                        <Link target="_blank" href={"https://t.me/cofinancecomunity"}>
+                                            <FaTelegram className="cursor-pointer" />
+                                        </Link>
                                     </div>
                                 </div>
                             </ul>

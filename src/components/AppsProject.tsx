@@ -15,15 +15,15 @@ const AppsProject = () => {
 
     return (
         <section className="p-10">
-            <div className="flex flex-row-reverse gap-8 items-center justify-between rounded-xl max-w-screen px-10 bg-explore shadow-md shadow-gray-800">
-                <div className="text-end" data-aos="fade-left">
+            <div className="flex flex-col lg:flex-row-reverse gap-8 items-center justify-between rounded-xl max-w-screen px-10 bg-explore shadow-md shadow-gray-800">
+                <div className="pt-3 text-center lg:text-end" data-aos="fade-left">
                     <p className='text-gray-600 text-xl uppercase'>Technology</p>
-                    <p className="py-2 text-4xl leading-8 font-extrabold tracking-tight text-white sm:text-4xl">
+                    <p className="py-2 text-xl lg:text-4xl leading-normal lg:leading-8 font-extrabold tracking-tight text-white sm:text-4xl">
                         Explore Our Services
                     </p>
-                    <p className="text-sm font-normal text-gray-400">Lorem ipsum sit dolor amet.</p>
+                    <p className="text-sm hidden lg:block font-normal text-gray-400">Lorem ipsum sit dolor amet.</p>
                 </div>
-                <div className="grid grid-cols-3 gap-4 items-center py-10">
+                <div className="grid grid-flow-row auto-rows-max lg:p-0 p-4 lg:grid-cols-3 gap-4 items-center pt-2 pb-10 space-y-3 lg:space-y-0 lg:py-10">
                     {featuredProjects.map((project: Project, index: number) => (
                         <div key={index} className="card bg-black w-96 shadow-xl hover:bg-custom-radial-gradient" data-aos="fade-up">
                             <div className="h-0 pt-5 px-5 space-y-4 z-50">
