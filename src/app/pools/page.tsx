@@ -20,8 +20,12 @@ function Pools() {
   const [addLiquidityModalOpen, setAddLiquidityModalOpen] = useState(false);
   const [account, setAccount] = useState<string | null>(null);
 
+  const DEFAULT_IMAGE_URL = '/img-default.png';
+
   useEffect(() => {
+
     const loadPools = async () => {
+      console.log("DEFAULT_IMAGE_URL" + DEFAULT_IMAGE_URL);
       setLoading(true);
       try {
         if (!window.ethereum) return;
@@ -91,8 +95,8 @@ function Pools() {
       return {
         address,
         liquidity: { totalA: '0.0', totalB: '0.0' },
-        tokenA: { value: 'N/A', label: 'N/A', image: '/tokens/Missing-Token.png' },
-        tokenB: { value: 'N/A', label: 'N/A', image: '/tokens/Missing-Token.png' },
+        tokenA: { value: 'N/A', label: 'N/A', image: DEFAULT_IMAGE_URL },
+        tokenB: { value: 'N/A', label: 'N/A', image: DEFAULT_IMAGE_URL },
       };
     }
   };
@@ -106,7 +110,7 @@ function Pools() {
     setAddLiquidityModalOpen(true);
   };
 
-  const handleWithdrawClick = (pool : any) => {
+  const handleWithdrawClick = (pool: any) => {
     setSelectedPool(pool);
     setLiquidityTokenAddress(pool.liquidityToken);
     setModalOpen(true);
@@ -187,11 +191,11 @@ function Pools() {
   const drawerList = [
     {
       label: "Discover",
-      content: <DiscoverPools pools={pools} />, 
+      content: <DiscoverPools pools={pools} />,
     },
     {
       label: "Incentivized",
-      content: <IncentivizedPools userOwnedPools={userOwnedPools} />, 
+      content: <IncentivizedPools userOwnedPools={userOwnedPools} />,
     },
   ];
 
@@ -200,7 +204,8 @@ function Pools() {
       <div className="px-40">
         <div className="flex items-center justify-between py-6">
           <h2 className="text-4xl font-bold text-white">Overview</h2>
-          <button className='btn btn-base-200 rounded-lg' onClick={() => window.location.href = '/addpools'}><FaSwimmingPool />Add New Pool</button>
+          <button className='btn btn-base-200 rounded-lg' onClick={() => window.location.href = '/addpools'}>
+            Add New Pool</button>
         </div>
         <div className="py-2">
           {loading ?
@@ -212,8 +217,8 @@ function Pools() {
               drawerItems={drawerList}
               classParent='py-2'
               title=''
-              classActiveTab='bg-[#141414] py-2 px-4 text-lg font-medium rounded-sm text-left text-[#bdc3c7]'
-              classDeactiveTab='bg-transparent border border-[#bdc3c7] text-lg font-medium py-2 px-4 rounded-sm text-left text-white'
+              classActiveTab='bg-[#141414] py-2 border border-[#bdc3c7] px-4 text-lg font-medium rounded-sm text-left text-[#bdc3c7]'
+              classDeactiveTab='bg-transparent text-lg font-medium py-2 px-4 rounded-sm text-left text-white'
             />
           }
         </div>
@@ -226,7 +231,7 @@ function Pools() {
           label: selectedPool?.liquidityToken?.label || '',
           balance: selectedPool?.liquidityToken?.balance || '0',
           address: selectedPool?.liquidityToken?.address || '',
-          image: selectedPool?.liquidityToken?.image || '/tokens/Missing-Token.png',
+          image: selectedPool?.liquidityToken?.image || DEFAULT_IMAGE_URL,
         }}
       />
 
