@@ -198,7 +198,6 @@ function Staking() {
 
     } catch (error) {
       console.error('Error staking:', error);
-      // Show error alert if any error occurs
       MySwal.fire({
         icon: 'error',
         title: 'Error!',

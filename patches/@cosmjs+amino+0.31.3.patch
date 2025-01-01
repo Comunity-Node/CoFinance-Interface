@@ -1,0 +1,141 @@
+diff --git a/node_modules/@cosmjs/amino/build/encoding.d.ts b/node_modules/@cosmjs/amino/build/encoding.d.ts
+index fc8b504..2a87a25 100644
+--- a/node_modules/@cosmjs/amino/build/encoding.d.ts
++++ b/node_modules/@cosmjs/amino/build/encoding.d.ts
+@@ -3,7 +3,7 @@ import { Ed25519Pubkey, Pubkey, Secp256k1Pubkey } from "./pubkeys";
+  * Takes a Secp256k1 public key as raw bytes and returns the Amino JSON
+  * representation of it (the type/value wrapper object).
+  */
+-export declare function encodeSecp256k1Pubkey(pubkey: Uint8Array): Secp256k1Pubkey;
++export declare function encodeSecp256k1Pubkey(pubkey: Uint8Array, algo?: string): Secp256k1Pubkey;
+ /**
+  * Takes an Edd25519 public key as raw bytes and returns the Amino JSON
+  * representation of it (the type/value wrapper object).
+diff --git a/node_modules/@cosmjs/amino/build/encoding.js b/node_modules/@cosmjs/amino/build/encoding.js
+index 477c250..8422979 100644
+--- a/node_modules/@cosmjs/amino/build/encoding.js
++++ b/node_modules/@cosmjs/amino/build/encoding.js
+@@ -9,12 +9,12 @@ const pubkeys_1 = require("./pubkeys");
+  * Takes a Secp256k1 public key as raw bytes and returns the Amino JSON
+  * representation of it (the type/value wrapper object).
+  */
+-function encodeSecp256k1Pubkey(pubkey) {
++function encodeSecp256k1Pubkey(pubkey, algo) {
+     if (pubkey.length !== 33 || (pubkey[0] !== 0x02 && pubkey[0] !== 0x03)) {
+         throw new Error("Public key must be compressed secp256k1, i.e. 33 bytes starting with 0x02 or 0x03");
+     }
+     return {
+-        type: pubkeys_1.pubkeyType.secp256k1,
++        type: algo ? pubkeys_1.pubkeyType[algo] : pubkeys_1.pubkeyType.secp256k1,
+         value: (0, encoding_1.toBase64)(pubkey),
+     };
+ }
+diff --git a/node_modules/@cosmjs/amino/build/index.d.ts b/node_modules/@cosmjs/amino/build/index.d.ts
+index 4829bb7..bf63129 100644
+--- a/node_modules/@cosmjs/amino/build/index.d.ts
++++ b/node_modules/@cosmjs/amino/build/index.d.ts
+@@ -3,7 +3,7 @@ export { addCoins, Coin, coin, coins, parseCoins } from "./coins";
+ export { decodeAminoPubkey, decodeBech32Pubkey, encodeAminoPubkey, encodeBech32Pubkey, encodeEd25519Pubkey, encodeSecp256k1Pubkey, } from "./encoding";
+ export { createMultisigThresholdPubkey } from "./multisig";
+ export { makeCosmoshubPath } from "./paths";
+-export { Ed25519Pubkey, isEd25519Pubkey, isMultisigThresholdPubkey, isSecp256k1Pubkey, isSinglePubkey, MultisigThresholdPubkey, Pubkey, pubkeyType, Secp256k1Pubkey, SinglePubkey, } from "./pubkeys";
++export { Ed25519Pubkey, isEd25519Pubkey, isMultisigThresholdPubkey, isEthsecp256k1Pubkey, isSecp256k1Pubkey, isSinglePubkey, MultisigThresholdPubkey, Pubkey, pubkeyType, Secp256k1Pubkey, SinglePubkey, } from "./pubkeys";
+ export { extractKdfConfiguration, Secp256k1HdWallet, Secp256k1HdWalletOptions } from "./secp256k1hdwallet";
+ export { Secp256k1Wallet } from "./secp256k1wallet";
+ export { decodeSignature, encodeSecp256k1Signature, StdSignature } from "./signature";
+diff --git a/node_modules/@cosmjs/amino/build/index.js b/node_modules/@cosmjs/amino/build/index.js
+index be3bd91..2b01501 100644
+--- a/node_modules/@cosmjs/amino/build/index.js
++++ b/node_modules/@cosmjs/amino/build/index.js
+@@ -28,6 +28,8 @@ Object.defineProperty(exports, "isMultisigThresholdPubkey", { enumerable: true,
+ Object.defineProperty(exports, "isSecp256k1Pubkey", { enumerable: true, get: function () { return pubkeys_1.isSecp256k1Pubkey; } });
+ Object.defineProperty(exports, "isSinglePubkey", { enumerable: true, get: function () { return pubkeys_1.isSinglePubkey; } });
+ Object.defineProperty(exports, "pubkeyType", { enumerable: true, get: function () { return pubkeys_1.pubkeyType; } });
++Object.defineProperty(exports, "isEthsecp256k1Pubkey", { enumerable: true, get: function () { return pubkeys_1.isEthsecp256k1Pubkey; } });
++
+ var secp256k1hdwallet_1 = require("./secp256k1hdwallet");
+ Object.defineProperty(exports, "extractKdfConfiguration", { enumerable: true, get: function () { return secp256k1hdwallet_1.extractKdfConfiguration; } });
+ Object.defineProperty(exports, "Secp256k1HdWallet", { enumerable: true, get: function () { return secp256k1hdwallet_1.Secp256k1HdWallet; } });
+@@ -44,4 +46,5 @@ Object.defineProperty(exports, "isStdTx", { enumerable: true, get: function () {
+ Object.defineProperty(exports, "makeStdTx", { enumerable: true, get: function () { return stdtx_1.makeStdTx; } });
+ var wallet_1 = require("./wallet");
+ Object.defineProperty(exports, "executeKdf", { enumerable: true, get: function () { return wallet_1.executeKdf; } });
++
+ //# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/node_modules/@cosmjs/amino/build/pubkeys.d.ts b/node_modules/@cosmjs/amino/build/pubkeys.d.ts
+index 8fa8fa5..3c59203 100644
+--- a/node_modules/@cosmjs/amino/build/pubkeys.d.ts
++++ b/node_modules/@cosmjs/amino/build/pubkeys.d.ts
+@@ -8,9 +8,15 @@ export interface Ed25519Pubkey extends SinglePubkey {
+ }
+ export declare function isEd25519Pubkey(pubkey: Pubkey): pubkey is Ed25519Pubkey;
+ export interface Secp256k1Pubkey extends SinglePubkey {
+-    readonly type: "tendermint/PubKeySecp256k1";
++    readonly type: string;
++    readonly value: string;
++}
++export interface Ethsecp256k1Pubkey extends SinglePubkey {
++    readonly type: "ethermint/PubKeyEthSecp256k1";
+     readonly value: string;
+ }
++export declare function isEthsecp256k1Pubkey(pubkey: Pubkey): pubkey is Ethsecp256k1Pubkey;
++
+ export declare function isSecp256k1Pubkey(pubkey: Pubkey): pubkey is Secp256k1Pubkey;
+ export declare const pubkeyType: {
+     /** @see https://github.com/tendermint/tendermint/blob/v0.33.0/crypto/ed25519/ed25519.go#L22 */
+diff --git a/node_modules/@cosmjs/amino/build/pubkeys.js b/node_modules/@cosmjs/amino/build/pubkeys.js
+index e9844ef..191965f 100644
+--- a/node_modules/@cosmjs/amino/build/pubkeys.js
++++ b/node_modules/@cosmjs/amino/build/pubkeys.js
+@@ -17,6 +17,7 @@ exports.pubkeyType = {
+     /** @see https://github.com/tendermint/tendermint/blob/v0.33.0/crypto/sr25519/codec.go#L12 */
+     sr25519: "tendermint/PubKeySr25519",
+     multisigThreshold: "tendermint/PubKeyMultisigThreshold",
++    ethsecp256k1: "ethermint/PubKeyEthSecp256k1",
+ };
+ function isSinglePubkey(pubkey) {
+     const singPubkeyTypes = [exports.pubkeyType.ed25519, exports.pubkeyType.secp256k1, exports.pubkeyType.sr25519];
+@@ -27,4 +28,9 @@ function isMultisigThresholdPubkey(pubkey) {
+     return pubkey.type === "tendermint/PubKeyMultisigThreshold";
+ }
+ exports.isMultisigThresholdPubkey = isMultisigThresholdPubkey;
++
++function isEthsecp256k1Pubkey(pubkey) {
++    return pubkey.type === "ethermint/PubKeyEthSecp256k1";
++}
++exports.isEthsecp256k1Pubkey = isEthsecp256k1Pubkey;
+ //# sourceMappingURL=pubkeys.js.map
+\ No newline at end of file
+diff --git a/node_modules/@cosmjs/amino/build/signature.d.ts b/node_modules/@cosmjs/amino/build/signature.d.ts
+index c7fff17..fe1d812 100644
+--- a/node_modules/@cosmjs/amino/build/signature.d.ts
++++ b/node_modules/@cosmjs/amino/build/signature.d.ts
+@@ -9,7 +9,7 @@ export interface StdSignature {
+  * @param pubkey a compressed secp256k1 public key
+  * @param signature a 64 byte fixed length representation of secp256k1 signature components r and s
+  */
+-export declare function encodeSecp256k1Signature(pubkey: Uint8Array, signature: Uint8Array): StdSignature;
++export declare function encodeSecp256k1Signature(pubkey: Uint8Array, signature: Uint8Array, urlType?: string): StdSignature;
+ export declare function decodeSignature(signature: StdSignature): {
+     readonly pubkey: Uint8Array;
+     readonly signature: Uint8Array;
+diff --git a/node_modules/@cosmjs/amino/build/signature.js b/node_modules/@cosmjs/amino/build/signature.js
+index 6a06bec..600400b 100644
+--- a/node_modules/@cosmjs/amino/build/signature.js
++++ b/node_modules/@cosmjs/amino/build/signature.js
+@@ -11,12 +11,12 @@ const pubkeys_1 = require("./pubkeys");
+  * @param pubkey a compressed secp256k1 public key
+  * @param signature a 64 byte fixed length representation of secp256k1 signature components r and s
+  */
+-function encodeSecp256k1Signature(pubkey, signature) {
++function encodeSecp256k1Signature(pubkey, signature, urlType) {
+     if (signature.length !== 64) {
+         throw new Error("Signature must be 64 bytes long. Cosmos SDK uses a 2x32 byte fixed length encoding for the secp256k1 signature integers r and s.");
+     }
+     return {
+-        pub_key: (0, encoding_2.encodeSecp256k1Pubkey)(pubkey),
++        pub_key: (0, encoding_2.encodeSecp256k1Pubkey)(pubkey, urlType),
+         signature: (0, encoding_1.toBase64)(signature),
+     };
+ }

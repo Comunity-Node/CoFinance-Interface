@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { FaArrowsAltH } from 'react-icons/fa';
 import { MdOutlineArrowOutward } from 'react-icons/md';
 
-// Add these interfaces at the top of the file
 interface Pool {
   id: string;
   tokenA: string;

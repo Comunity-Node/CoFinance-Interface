@@ -7,12 +7,12 @@ import { IoIosGitNetwork } from "react-icons/io";
 // Define the chain options, including Solana clusters
 const chains = [
   { value: '0x103d', label: 'Cross Finance', soon: false, icon: 'https://miro.medium.com/v2/resize:fit:256/1*jTN3cYGlobHuPdnhu2lYhg.png' },
-  { value: '0x28c61', label: 'Taiko', soon: false, icon: 'https://s2.coinmarketcap.com/static/img/coins/200x200/31525.png' },
-  { value: '0x61', label: 'Binance Smart Chain', soon: false, icon: 'https://i0.wp.com/www.followchain.org/wp-content/uploads/2024/03/icons8-bnb-330.png?fit=330%2C330&ssl=1' },
-  { value: '0x50b', label: 'Swisstronik', soon: false, icon: 'https://s3-ap-southeast-2.amazonaws.com/www.cryptoknowmics.com/airdrops/SWTR_LOGO_SYMBOL_PNG.png' },
-  { value: '0x1ba5', label: 'Planq', soon: false, icon: 'https://planq.network/_next/image?url=https%3A%2F%2Fcdn.builder.io%2Fapi%2Fv1%2Fimage%2Fassets%252F9770b285ecd94682a83d82643e538cdf%252F352051f7ea1344578a069ae40f99d9d1&w=256&q=75' },
-  { value: '0x530', label: 'Sei', soon: false, icon: 'https://www.tbstat.com/wp/uploads/2023/10/Sei_Logo_-_Transparent.png' },
-  { value: '-', label: 'Cardano', soon: true, icon: 'https://cdn4.iconfinder.com/data/icons/crypto-currency-and-coin-2/256/cardano_ada-512.png' },
+ // { value: '0x28c61', label: 'Taiko', soon: false, icon: 'https://s2.coinmarketcap.com/static/img/coins/200x200/31525.png' },
+ // { value: '0x61', label: 'Binance Smart Chain', soon: false, icon: 'https://i0.wp.com/www.followchain.org/wp-content/uploads/2024/03/icons8-bnb-330.png?fit=330%2C330&ssl=1' },
+ // { value: '0x50b', label: 'Swisstronik', soon: false, icon: 'https://s3-ap-southeast-2.amazonaws.com/www.cryptoknowmics.com/airdrops/SWTR_LOGO_SYMBOL_PNG.png' },
+  //{ value: '0x1ba5', label: 'Planq', soon: false, icon: 'https://planq.network/_next/image?url=https%3A%2F%2Fcdn.builder.io%2Fapi%2Fv1%2Fimage%2Fassets%252F9770b285ecd94682a83d82643e538cdf%252F352051f7ea1344578a069ae40f99d9d1&w=256&q=75' },
+  //{ value: '0x530', label: 'Sei', soon: false, icon: 'https://www.tbstat.com/wp/uploads/2023/10/Sei_Logo_-_Transparent.png' },
+  //{ value: '-', label: 'Cardano', soon: true, icon: 'https://cdn4.iconfinder.com/data/icons/crypto-currency-and-coin-2/256/cardano_ada-512.png' },
 ];
 
 const ChainSwitchButton: React.FC = () => {

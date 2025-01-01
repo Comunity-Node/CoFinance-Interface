@@ -12,6 +12,7 @@ import { FaInfoCircle } from 'react-icons/fa';
 import CardAccountDetails from '@/components/inner-page/CardAccountDetails';
 import Modal from '@/components/Modal';
 import CardManagedStaked from '@/components/inner-page/CardManagedStaked';
+import { ValAddresses } from 'cosmjs-types/cosmos/staking/v1beta1/staking';
 
 interface Validator {
   [x: string]: ReactNode;
@@ -24,8 +25,8 @@ interface Validator {
   rpcUrl?: string;
 }
 
-const DEFAULT_CHAIN_ID = 'osmo-test-5';
-const DEFAULT_RPC_URL = 'https://rpc.testnet.osmosis.zone';
+const DEFAULT_CHAIN_ID = 'crossfi-evm-testnet-1';
+const DEFAULT_RPC_URL = 'https://crossfi-testnet-rpc.polkachu.com';
 
 function TokenStake() {
   const [walletConnected, setWalletConnected] = useState(false);
@@ -60,7 +61,8 @@ function TokenStake() {
 
   const openModalStaked = (validator: Validator) => {
     setModalVisibleStaked(true);
-    setModalTitle(validator.name || 'Unnamed Validator');
+    setModalTitle(validator.moniker || 'Unnamed Validator');
+    setSelectedValidator(validator);  // Store the full validator data if needed for further processing
 
   }
 
@@ -73,11 +75,11 @@ function TokenStake() {
   useEffect(() => {
     const fetchBalance = async () => {
       if (client && account) {
-        const denom = selectedValidator?.denom;
+        const denom = "mpx";
         try {
           const accountBalance = await client.getBalance(account.address, denom || '');
           console.log(accountBalance)
-          setBalance(accountBalance.amount);
+          setBalance(accountBalance.amount/1000000000000000000);
         } catch (error) {
           setError(`Failed to fetch balance: ${error}`);
         }
@@ -87,13 +89,16 @@ function TokenStake() {
     const fetchStakingInfo = async () => {
       if (account) {
         try {
-          const response = await axios.get(`https://lcd.testnet.osmosis.zone/cosmos/staking/v1beta1/delegations/${account.address}`);
+          const response = await axios.get(`https://crossfi-testnet-api.itrocket.net/cosmos/staking/v1beta1/delegations/${account.address}`);
           const data = response.data;
+          console.log(data);
 
           if (data.delegation_responses && data.delegation_responses.length > 0) {
             const delegation = data.delegation_responses[0].delegation;
             const validatorAddress = delegation.validator_address;
-            const amount = data.delegation_responses[0].balance.amount;
+            const amountInBaseUnits = data.delegation_responses[0].balance.amount;
+            console.log(amountInBaseUnits);
+            const amount = (parseFloat(amountInBaseUnits)/1000000000000000000).toString();
             const validator = validators.find(v => v.operator_address === validatorAddress);
 
             setStakedValidator(validator || null);
@@ -113,22 +118,35 @@ function TokenStake() {
     fetchRewards(account);
   }, [client, account]);
 
+  
   const fetchRewards = async (account: any) => {
     if (!account) return;
-
+  
     try {
-      const response = await axios.get(`https://lcd.testnet.osmosis.zone/cosmos/distribution/v1beta1/delegators/${account.address}/rewards`);
+      const response = await axios.get(`https://crossfi-testnet-api.itrocket.net/cosmos/distribution/v1beta1/delegators/${account.address}/rewards`);
       const data = response.data;
+  
       if (data.rewards && data.rewards.length > 0) {
         let totalReward = 0;
+  
+        // Correctly sum all reward amounts
         for (const reward of data.rewards) {
           totalReward += reward.reward.reduce((acc: number, curr: any) => acc + parseFloat(curr.amount), 0);
+          console.log("Total reward so far:", totalReward);
         }
+  
+        // Divide by 10^18 to scale the value correctly
+        totalReward = totalReward / 1000000000000000000;
+  
+        // Log to check the final reward
+        console.log("Total reward after dividing by 10^18:", totalReward);
+  
         const validatorAddress = data.rewards[0].validator_address;
         const validator = validators.find(v => v.operator_address === validatorAddress);
-
+  
+        // Set the state with the correct value
         setStakedValidator(validator || null);
-        setReward(totalReward.toString());
+        setReward(totalReward.toFixed(18));  // Ensure it's formatted with 18 decimal places
       } else {
         setReward('0');
         setStakedValidator(null);
@@ -137,6 +155,7 @@ function TokenStake() {
       setError(`Failed to fetch rewards: ${error}`);
     }
   };
+  
   const [reward, setReward] = useState<string | null>(null);
 
   useEffect(() => {
@@ -161,7 +180,6 @@ function TokenStake() {
   const connectWallet = async (validatorId: string) => {
     const selectedValidator = validators.find(v => v.operator_address === validatorId);
     const chainId = selectedValidator?.chainid || DEFAULT_CHAIN_ID;
-
     if (!window.getOfflineSigner || !window.getOfflineSigner(chainId)) {
       setError("Keplr Wallet is not installed or not available for the selected network");
       return;
@@ -200,28 +218,31 @@ function TokenStake() {
 
   const handleSelectValidator = async (validator: Validator) => {
     const chainId = validator.chainid || DEFAULT_CHAIN_ID;
-    const denom = validator.denom || 'uosmo';
+    const denom = validator.denom || 'mpx';
     const rpcUrl = validator.rpcUrl || DEFAULT_RPC_URL;
-
+    const valaddress = validator.operator_address;
+  
+    // Set selectedValidator to the entire validator object
     setSelectedValidator(validator);
-    setStakedAmount('');
-    setUnstakedAmount('');
-
+  
+    setStakedAmount('');  // Reset staking amount
+    setUnstakedAmount('');  // Reset unstaking amount
+  
     if (!window.getOfflineSigner || !window.getOfflineSigner(chainId)) {
       setError("Keplr Wallet is not available for the selected network");
       return;
     }
-
+  
     try {
       const offlineSigner = window.getOfflineSigner(chainId);
       const newClient = await SigningStargateClient.connectWithSigner(rpcUrl, offlineSigner);
       setClient(newClient);
-
+  
       const accounts = await offlineSigner.getAccounts();
       if (accounts.length > 0) {
+        // Set account and show popup for user interaction
         setAccount(accounts[0]);
-        setShowPopup(true);
-
+        setShowPopup(true);  // Show the modal after a successful connection
       } else {
         setError("No accounts found after reconnecting to the selected network");
       }
@@ -229,16 +250,17 @@ function TokenStake() {
       setError(`Failed to connect to the selected network: ${err}`);
     }
   };
-
+  
+  
   const handleStake = async () => {
     if (!client || !account || !selectedValidator) return;
-
+  
     const validator = selectedValidator.operator_address;
     const chainId = selectedValidator.chainid || DEFAULT_CHAIN_ID;
-    const denom = selectedValidator.denom || 'uosmo';
+    const denom = selectedValidator.denom || 'mpx';
     const rpcUrl = selectedValidator.rpcUrl || DEFAULT_RPC_URL;
-    const validChainIds = ['swisstronik_1291-1'];
-
+    const validChainIds = ['crossfi-evm-testnet-1'];
+  
     if (!validChainIds.includes(chainId)) {
       try {
         const amountToStake = parseFloat(stakedAmount);
@@ -246,10 +268,10 @@ function TokenStake() {
           setError("Invalid stake amount");
           return;
         }
-
+  
         const fee = { amount: [{ denom: selectedValidator.denom, amount: '3000' }], gas: '300000' };
         const stakingAmount = [{ denom: selectedValidator.denom, amount: amountToStake.toString() }];
-
+  
         const tx = await client.signAndBroadcast(
           account.address,
           [
@@ -270,95 +292,33 @@ function TokenStake() {
           setTxHash(null);
         } else {
           setTxHash(tx.transactionHash || 'Transaction hash not available');
-          console.log(tx.transactionHash);
-          setShowPopup(false);
+          setShowPopup(false);  
         }
-
       } catch (err) {
         setError(`Failed to stake tokens: ${err}`);
         setTxHash(null);
       }
       return;
     }
-
-    if (chainId === 'swisstronik_1291-1') {
-
-      try {
-        const offlineSigner = window.getOfflineSigner(chainId);
-        // console.log(offlineSigner)
-        const newClient = await SigningStargateClient.connectWithSigner(rpcUrl, offlineSigner);
-        console.log(newClient)
-        setClient(newClient);
-
-        const amount = {
-          denom,
-          amount: (parseFloat(stakedAmount) * 1000000).toString(),
-        };
-
-        const fee: Fee = {
-          amount: [{ denom, amount: '3000' }],
-          gasLimit: BigInt(0),
-          payer: '',
-          granter: ''
-        };
-
-        const messages = [
-          {
-            typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-            value: {
-              delegatorAddress: account.address,
-              validatorAddress: validator,
-              amount: {
-                denom: selectedValidator.denom,
-                amount: amount.amount,
-              },
-            },
-          },
-        ];
-        const txBytes = await sign(
-          newClient.registry,
-          newClient,
-          offlineSigner,
-          chainId,
-          account.address,
-          messages,
-          { ...fee, gas: '300000' },
-          ''
-        );
-
-        const broadcastResult = await newClient.broadcastTx(txBytes);
-
-        if (broadcastResult.code !== 0) {
-          setError(`Transaction failed: ${broadcastResult.rawLog}`);
-          setTxHash(null);
-        } else {
-          setTxHash(broadcastResult.transactionHash || 'Transaction hash not available');
-          setShowPopup(true);
-        }
-
-      } catch (err) {
-        setError(`Failed to connect to the selected network or sign the transaction: ${err}`);
-      }
-    }
   };
-
+  
   const handleUnstake = async () => {
     if (!client || !account || !selectedValidator) return;
-
+  
     const validator = selectedValidator.operator_address;
     const chainId = selectedValidator.chainid || DEFAULT_CHAIN_ID;
-    const denom = selectedValidator.denom || 'uosmo';
+    const denom = selectedValidator.denom || 'mpx';
     const amount = {
       denom,
-      amount: (parseFloat(unstakedAmount) * 1000000).toString(),
+      amount: parseFloat(unstakedAmount).toString(),
     };
-
+  
     try {
       const fee: StdFee = {
         amount: [{ denom, amount: '3000' }],
         gas: '300000',
       };
-
+  
       const messages = [
         {
           typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
@@ -369,28 +329,29 @@ function TokenStake() {
           },
         },
       ];
-
+  
       const tx = await client.signAndBroadcast(
         account.address,
         messages,
         fee,
         ''
       );
-
+  
       assertIsBroadcastTxSuccess(tx);
-
+  
       setTxHash(tx.transactionHash || 'Transaction hash not available');
-      setShowPopup(true);
+      setShowPopup(true);  // Show the modal after successful unstaking
     } catch (err) {
       setError(`Failed to unstake: ${err}`);
     }
   };
+  
 
   const handleClaimRewards = async () => {
     if (!client || !account || !selectedValidator) return;
 
     const validatorAddress = selectedValidator.operator_address;
-    const denom = selectedValidator.denom || 'uosmo';
+    const denom = selectedValidator.denom || 'mpx';
 
     try {
       const fee: StdFee = {
@@ -494,7 +455,7 @@ function TokenStake() {
                           // onClick={() => handleSelectValidator(validator)}
                           onClick={() => openModalStaked(validator)}
                         >
-                          <td className="p-4 text-left text-gray-200">{validator.name}</td>
+                          <td className="p-4 text-left text-gray-200">{validator.moniker}</td>
                           <td className="p-4 text-right text-gray-200">{validator.APR}</td>
                           <td className="p-4 text-right text-gray-200">{validator.denom}</td>
                         </tr>
@@ -510,21 +471,23 @@ function TokenStake() {
       {/* {showPopup && ( */}
       {/* Modal */}
       <Modal
-        isVisible={isModalVisibleStaked}
-        onClose={closeModalStaked}
-        title={<span>{modalTitle}</span>}
-      >
-        <CardManagedStaked
-          selectedValidator={selectedValidator}
-          stakedAmount={stakedAmount ? stakedAmount : ''}
-          unstakedAmount={unstakedAmount ? unstakedAmount : ''}
-          handleClaimRewards={() => handleClaimRewards}
-          handleStake={() => handleStake}
-          handleUnstake={() => handleUnstake}
-          changeStakedAmount={setStakedAmount}
-          changeUnstakedAmount={setUnstakedAmount}
-          txHash={txHash || ''} />
-      </Modal>
+  isVisible={isModalVisibleStaked}
+  onClose={closeModalStaked}
+  title={<span>{modalTitle}</span>}
+>
+  <CardManagedStaked
+    selectedValidator={selectedValidator}  
+    stakedAmount={stakedAmount ? stakedAmount : ''}
+    unstakedAmount={unstakedAmount ? unstakedAmount : ''}
+    handleClaimRewards= {handleClaimRewards}
+    handleStake={handleStake}  
+    handleUnstake={handleUnstake}
+    changeStakedAmount={setStakedAmount}
+    changeUnstakedAmount={setUnstakedAmount}
+    txHash={txHash || ''}
+  />
+</Modal>
+
       {/* )} */}
 
       {/* Modal */}

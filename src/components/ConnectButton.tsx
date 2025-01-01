@@ -12,7 +12,6 @@ import '@sweetalert2/theme-dark/dark.css';
 import WalletDetails from './WalletDetails';
 const MySwal = withReactContent(Swal);
 
-
 interface ConnectButtonProps {
   account: string | null;
   setAccount: React.Dispatch<React.SetStateAction<string | null>>;
@@ -137,7 +136,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ account, setAccount }) =>
       await MySwal.fire({
         icon: 'success',
         title: 'Disconnect',
-        text: 'Diconnected your wallet!',
+        text: 'Disconnected your wallet!',
         customClass: {
           popup: 'my-custom-popup',
           confirmButton: 'my-custom-confirm-button',
@@ -204,7 +203,6 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ account, setAccount }) =>
       <div className="fixed top-4 right-5 z-50 transition-transform">
         <div className="flex items-center space-x-4 py-2">
           <ChainSwitchButton />
-
           <ButtonGlass onClick={openModal}>
             <FaWallet className="mr-2" /> {connected ? `${account?.substring(0, 6)}...${account?.substring(account.length - 4)}` : 'Connect Wallet'}
           </ButtonGlass>
@@ -216,39 +214,30 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ account, setAccount }) =>
         <div className="bg-[#141414] modal-box space-y-2">
           <h3 className="font-semibold text-2xl">{connected ? "Your" : "Connect"} Wallet</h3>
           <div className="w-full bg-transparent rounded-lg pt-5">
-            {connected ?
-              (
-                <WalletDetails
-                  connected={connected}
-                  account={account || ''}
-                  handleCopy={handleCopy}
-                  copySuccess={copySuccess ? "Copied" : ""}
-                  handleDisconnectWallet={handleDisconnectWallet}
-                  loading={loading}
-                />
-              )
-              :
-              (
-                <ul className={`menu menu-lg ${connected ? 'bg-transparent border-gray-700 border-2 rounded-xl' : 'bg-[#141414]'} rounded-box w-full`}>
-                  {walletOptions.map((wallet, index) => (
-                    <WalletOption
-                      key={index}
-                      img={wallet.img}
-                      name={wallet.name}
-                      onClick={wallet.onClick}
-                      disabled={wallet.disabled}
-                      soon={wallet.soon}
-                      loading={wallet.loading}
-                    />
-                  ))}
-                </ul>
-              )}
-            <footer className="footer bg-transparent text-neutral-content items-center px-4 pt-4 justify-center">
-              <aside className="grid-flow-col items-center">
-                <p>Powered By </p>
-                <img src="/logo-new.png" className='w-20' alt="" />
-              </aside>
-            </footer>
+            {connected ? (
+              <WalletDetails
+                connected={connected}
+                account={account || ''}
+                handleCopy={handleCopy}
+                copySuccess={copySuccess ? "Copied" : ""}
+                handleDisconnectWallet={handleDisconnectWallet}
+                loading={loading}
+              />
+            ) : (
+              <ul className={`menu menu-lg ${connected ? 'bg-transparent border-gray-700 border-2 rounded-xl' : 'bg-[#141414]'} rounded-box w-full`}>
+                {walletOptions.map((wallet, index) => (
+                  <WalletOption
+                    key={index}
+                    img={wallet.img}
+                    name={wallet.name}
+                    onClick={wallet.onClick}
+                    disabled={wallet.disabled}
+                    soon={wallet.soon}
+                    loading={wallet.loading}
+                  />
+                ))}
+              </ul>
+            )}
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">

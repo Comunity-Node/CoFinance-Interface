@@ -11,8 +11,7 @@ import { encryptDataField } from "@swisstronik/utils";
 import { MdOutlineArrowOutward } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import '@sweetalert2/theme-dark/dark.css'; // Import the dark theme
-
+import '@sweetalert2/theme-dark/dark.css'; 
 const MySwal = withReactContent(Swal);
 
 const Faucet: React.FC = () => {
@@ -44,10 +43,8 @@ const Faucet: React.FC = () => {
     }
 
     // Initialize provider and signer
-    const provider = new ethers.BrowserProvider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = await provider.getSigner();
-
-    // Request MetaMask to sign the message
     const signature = await signer.signMessage(message);
 
     return signature;
@@ -77,7 +74,7 @@ const Faucet: React.FC = () => {
 
     try {
       await promptMetaMaskSign(message);
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
       const chainId = await provider.getNetwork().then(network => network.chainId);
       const swisstronikChainId = 1291; // Example Swisstronik chain ID, update if necessary
 
@@ -85,7 +82,6 @@ const Faucet: React.FC = () => {
 
       const newLocal = chainId === BigInt(swisstronikChainId);
       if (newLocal) {
-        // Use specific addresses for Swisstronik
         addresses = [
           '0xbe821Cd53a7e6E957F22cC866f6D2Bd42Ab1f18c',
           '0xff5f8727fC6943623fE5395e0781aC264bc16a41'
@@ -96,7 +92,6 @@ const Faucet: React.FC = () => {
       }
 
       if (!addresses || addresses.length === 0) {
-        // throw new Error('No contract addresses for the current chain ID');
         MySwal.fire({
           icon: 'error',
           title: 'Failed to Request Faucet!',
@@ -122,7 +117,7 @@ const Faucet: React.FC = () => {
 
         // Encode function data
         const data = contract.interface.encodeFunctionData(functionName);
-        const rpcLink = "https://json-rpc.testnet.swisstronik.com";
+        const rpcLink = "https://rpc.testnet.ms";
         const [encryptedData] = await encryptDataField(rpcLink, data);
         const tx: ethers.providers.TransactionRequest = {
           to: address,
@@ -183,7 +178,6 @@ const Faucet: React.FC = () => {
         <div className="bg-[#141414] rounded-xl p-4 space-y-6 w-full max-w-2xl">
           <div className="leading-none">
             <h1 className="text-3xl font-semibold text-white my-3 text-start">Get The Tokens</h1>
-            <p className='tex-sm font-normal text-gray-400'>Lorem ipsum sit dolor amet.</p>
           </div>
           <div className="flex justify-center mb-12">
             <div className="bg-[#292929] rounded-lg shadow-lg w-full max-w-2xl">

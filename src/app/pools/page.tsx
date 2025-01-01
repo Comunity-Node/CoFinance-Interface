@@ -23,9 +23,7 @@ function Pools() {
   const DEFAULT_IMAGE_URL = '/img-default.png';
 
   useEffect(() => {
-
     const loadPools = async () => {
-      console.log("DEFAULT_IMAGE_URL" + DEFAULT_IMAGE_URL);
       setLoading(true);
       try {
         if (!window.ethereum) return;
@@ -34,21 +32,38 @@ function Pools() {
         const signer = await provider.getSigner();
         const accountAddress = await signer.getAddress();
         setAccount(accountAddress);
-        console.log("Connected Account : ", accountAddress);
+        console.log("Connected Account: ", accountAddress);
 
         const poolAddresses = await getAllPools(provider);
         const incentivizedPoolAddresses = await getIncentivizedPools(provider);
 
+        // Fetch all pools and filter out invalid ones
         const allPools = await Promise.all(
           poolAddresses.map(async (address: any) => await fetchPoolData(provider, address))
         );
-
         const userOwned = await Promise.all(
           incentivizedPoolAddresses.map(async (address: any) => await fetchPoolData(provider, address))
         );
 
-        setPools(allPools);
-        setUserOwnedPools(userOwned);
+        // Filter out null values (invalid pools)
+        const validPools = allPools.filter(pool => pool !== null);
+        const validUserOwnedPools = userOwned.filter(pool => pool !== null);
+
+        // Sort pools by liquidity (higher to lower)
+        validPools.sort((a, b) => {
+          const liquidityA = (a.liquidity.totalA + a.liquidity.totalB);
+          const liquidityB = (b.liquidity.totalA + b.liquidity.totalB);
+          return liquidityB - liquidityA;  // Descending order
+        });
+
+        validUserOwnedPools.sort((a, b) => {
+          const liquidityA = (a.liquidity.totalA + a.liquidity.totalB);
+          const liquidityB = (b.liquidity.totalA + b.liquidity.totalB);
+          return liquidityB - liquidityA;  // Descending order
+        });
+
+        setPools(validPools);
+        setUserOwnedPools(validUserOwnedPools);
       } catch (error) {
         console.error('Error loading pools:', error);
       } finally {
@@ -70,10 +85,18 @@ function Pools() {
       const liquidity = await getTotalLiquidity(provider, address);
       const scaledTotalA = parseFloat(liquidity.totalA);
       const scaledTotalB = parseFloat(liquidity.totalB);
+
+      // Check if the token info is valid (not "N/A" or empty)
+      if (
+        tokenAInfo.label === 'N/A' || tokenBInfo.label === 'N/A' || 
+        !tokenAInfo.label || !tokenBInfo.label || 
+        tokenAInfo.value === 'N/A' || tokenBInfo.value === 'N/A'
+      ) {
+        return null;  // Skip invalid pools
+      }
+
       if (tokenAInfo.label === 'WXFI') tokenAInfo.label = 'XFI';
       if (tokenBInfo.label === 'WXFI') tokenBInfo.label = 'XFI';
-
-      console.log("address pool " + address);
 
       return {
         address,
@@ -91,13 +114,8 @@ function Pools() {
         liquidityToken,
       };
     } catch (error) {
-      // console.error(`Error fetching liquidity for pool ${address}:`, error);
-      return {
-        address,
-        liquidity: { totalA: '0.0', totalB: '0.0' },
-        tokenA: { value: 'N/A', label: 'N/A', image: DEFAULT_IMAGE_URL },
-        tokenB: { value: 'N/A', label: 'N/A', image: DEFAULT_IMAGE_URL },
-      };
+      console.error(`Error fetching liquidity for pool ${address}:`, error);
+      return null;  // Skip pools with errors
     }
   };
 
@@ -115,7 +133,6 @@ function Pools() {
     setLiquidityTokenAddress(pool.liquidityToken);
     setModalOpen(true);
   };
-
 
   const DiscoverPools = ({ pools }) => (
     <div className="bg-[#141414] p-6 rounded-lg min-w-full h-96">
@@ -154,7 +171,7 @@ function Pools() {
 
   const IncentivizedPools = ({ userOwnedPools }) => (
     <div className="bg-[#141414] p-6 rounded-lg min-w-full h-96">
-      {pools.length === 0 ? (
+      {userOwnedPools.length === 0 ? (
         <p className="text-white text-center">No pools available</p>
       ) : (
         <div className="overflow-x-auto h-screen">
@@ -187,7 +204,6 @@ function Pools() {
     </div>
   );
 
-
   const drawerList = [
     {
       label: "Discover",
@@ -208,11 +224,11 @@ function Pools() {
             Add New Pool</button>
         </div>
         <div className="py-2">
-          {loading ?
+          {loading ? (
             <div className="flex items-center justify-center">
               <span className="loading loading-bars loading-lg"></span>
             </div>
-            :
+          ) : (
             <Drawer
               drawerItems={drawerList}
               classParent='py-2'
@@ -220,7 +236,7 @@ function Pools() {
               classActiveTab='bg-[#141414] py-2 border border-[#bdc3c7] px-4 text-lg font-medium rounded-sm text-left text-[#bdc3c7]'
               classDeactiveTab='bg-transparent text-lg font-medium py-2 px-4 rounded-sm text-left text-white'
             />
-          }
+          )}
         </div>
       </div>
 
@@ -243,7 +259,6 @@ function Pools() {
         account={account || ''}
         poolAddress={selectedPool?.address || ''}
       />
-
     </section>
   );
 }
