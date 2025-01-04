@@ -149,7 +149,7 @@ const CardManagedStaked: React.FC<CardManagedStakedProps> = ({
                                 />
                                 <Link
                                     target='_blank'
-                                    href={`https://www.mintscan.io/osmosis-testnet/tx/${txHash}`}>
+                                    href={`https://testnet.crossfi.explorers.guru/transaction/${txHash}`}>
                                     <button
                                         className={`btn join-item rounded-lg font-normal tooltip tooltip-success`}
                                         data-tip={'Visit'}

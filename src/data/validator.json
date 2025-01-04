@@ -2,7 +2,7 @@
   "tokens": [
     {
       "name": "crossfinance",
-      "operator_address": "mxvaloper1jzjj9dtvg0yhhzazhurfl3mdedveshp0e2hrck",
+      "operator_address": "mxvaloper170dfpruqux3nu06rlyjck07vt8ek62fr4a4u38",
       "moniker": "comunitynode",
       "chainid": "crossfi-evm-testnet-1",
       "rpcUrl": "https://crossfi-testnet-rpc.cryptonode.id",
