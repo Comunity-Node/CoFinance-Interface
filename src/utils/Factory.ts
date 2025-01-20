@@ -414,6 +414,7 @@ export const getAllPools = async (provider: ethers.BrowserProvider) => {
     try {
       const coFinanceFactory = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
       const pools = await coFinanceFactory.getAllPools();
+	  console.log(pools);
       return pools;
     } catch (error) {
       console.error('Error fetching all pools:', error);
@@ -433,9 +434,23 @@ export const getAllPools = async (provider: ethers.BrowserProvider) => {
   };
   
 
-  export const getPoolByPairs = async (provider, tokenA, tokenB) => {
-    const contract = new ethers.Contract(COFINANCE_FACTORY_ADDRESS, COFINANCE_FACTORY_ABI, provider);
-    const [sortedTokenA, sortedTokenB] = tokenA < tokenB ? [tokenA, tokenB] : [tokenB, tokenA];
-    const poolAddress = await contract.pools(sortedTokenA, sortedTokenB);
-    return poolAddress;
-};
+  export const getPoolByPairs = async (provider: ethers.BrowserProvider, tokenA: string, tokenB: string) => {
+	const contractAddress = '0xee2bf3Aa042C3915190EB9bf50B9EF5ae89565A9'; // Replace with actual contract address
+	const contractABI = [
+	  // The ABI of the contract, make sure it includes the method `getPoolByPair`
+	  "function getPoolByPair(address tokenA, address tokenB) view returns (address)"
+	];
+  
+	const contract = new ethers.Contract(contractAddress, contractABI, provider);
+	
+	// Make sure to sort the tokens correctly
+	const [sortedTokenA, sortedTokenB] = tokenA < tokenB ? [tokenA, tokenB] : [tokenB, tokenA];
+	
+	try {
+	  const poolAddress = await contract.getPoolByPair(sortedTokenA, sortedTokenB);
+	  return poolAddress;
+	} catch (error) {
+	  console.error('Error fetching pool address:', error);
+	  throw error; // Rethrow the error for further handling
+	}
+  };

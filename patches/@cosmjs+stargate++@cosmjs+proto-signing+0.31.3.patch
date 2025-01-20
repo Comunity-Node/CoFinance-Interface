@@ -1,0 +1,221 @@
+diff --git a/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/directsecp256k1hdwallet.d.ts b/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/directsecp256k1hdwallet.d.ts
+index d3059a9..b1ae870 100644
+--- a/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/directsecp256k1hdwallet.d.ts
++++ b/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/directsecp256k1hdwallet.d.ts
+@@ -71,7 +71,7 @@ export declare class DirectSecp256k1HdWallet implements OfflineDirectSigner {
+     protected constructor(mnemonic: EnglishMnemonic, options: DirectSecp256k1HdWalletConstructorOptions);
+     get mnemonic(): string;
+     getAccounts(): Promise<readonly AccountData[]>;
+-    signDirect(signerAddress: string, signDoc: SignDoc): Promise<DirectSignResponse>;
++    signDirect(signerAddress: string, signDoc: SignDoc, urlType?: string): Promise<DirectSignResponse>;
+     /**
+      * Generates an encrypted serialization of this wallet.
+      *
+@@ -91,5 +91,8 @@ export declare class DirectSecp256k1HdWallet implements OfflineDirectSigner {
+     serializeWithEncryptionKey(encryptionKey: Uint8Array, kdfConfiguration: KdfConfiguration): Promise<string>;
+     private getKeyPair;
+     private getAccountsWithPrivkeys;
++    static getBech32AddressFromEVMAddress(evmAddress: string, bech32Prefix: string): Promise<string>;
++    private static isValidAddress(address: string): boolean;
++    private static toChecksummedAddress(address: string): string;
+ }
+ export {};
+diff --git a/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/directsecp256k1hdwallet.js b/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/directsecp256k1hdwallet.js
+index 660cee0..76de4e3 100644
+--- a/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/directsecp256k1hdwallet.js
++++ b/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/directsecp256k1hdwallet.js
+@@ -161,7 +161,7 @@ class DirectSecp256k1HdWallet {
+             address: address,
+         }));
+     }
+-    async signDirect(signerAddress, signDoc) {
++    async signDirect(signerAddress, signDoc, urlType) {
+         const accounts = await this.getAccountsWithPrivkeys();
+         const account = accounts.find(({ address }) => address === signerAddress);
+         if (account === undefined) {
+@@ -169,14 +169,32 @@ class DirectSecp256k1HdWallet {
+         }
+         const { privkey, pubkey } = account;
+         const signBytes = (0, signing_1.makeSignBytes)(signDoc);
+-        const hashedMessage = (0, crypto_1.sha256)(signBytes);
+-        const signature = await crypto_1.Secp256k1.createSignature(hashedMessage, privkey);
+-        const signatureBytes = new Uint8Array([...signature.r(32), ...signature.s(32)]);
+-        const stdSignature = (0, amino_1.encodeSecp256k1Signature)(pubkey, signatureBytes);
+-        return {
+-            signed: signDoc,
+-            signature: stdSignature,
+-        };
++
++        switch (urlType) {
++            case '/ethermint.crypto.v1.ethsecp256k1.PubKey': {
++                // eth signing 
++                const hashedMessage = new crypto_1.Keccak256(signBytes).digest();
++                const signature = await crypto_1.Secp256k1.createSignature(hashedMessage, privkey);
++                const signatureBytes = new Uint8Array([...signature.r(32), ...signature.s(32)]);
++                const stdSignature = (0, amino_1.encodeSecp256k1Signature)(pubkey, signatureBytes, account.algo);
++ 
++                return {
++                    signed: signDoc,
++                    signature: stdSignature
++                };
++            }
++            default: {
++                // cosmos sigining
++                const hashedMessage = (0, crypto_1.sha256)(signBytes);
++                const signature = await crypto_1.Secp256k1.createSignature(hashedMessage, privkey);
++                const signatureBytes = new Uint8Array([...signature.r(32), ...signature.s(32)]);
++                const stdSignature = (0, amino_1.encodeSecp256k1Signature)(pubkey, signatureBytes);
++                return {
++                    signed: signDoc,
++                    signature: stdSignature,
++                };
++            }
++        }   
+     }
+     /**
+      * Generates an encrypted serialization of this wallet.
+@@ -222,23 +240,93 @@ class DirectSecp256k1HdWallet {
+     async getKeyPair(hdPath) {
+         const { privkey } = crypto_1.Slip10.derivePath(crypto_1.Slip10Curve.Secp256k1, this.seed, hdPath);
+         const { pubkey } = await crypto_1.Secp256k1.makeKeypair(privkey);
+-        return {
+-            privkey: privkey,
+-            pubkey: crypto_1.Secp256k1.compressPubkey(pubkey),
+-        };
++        const coinType = (0, crypto_1.pathToString)(hdPath).split('/')[2];
++        switch (coinType) {
++            // ETH cointype=60
++            case "60'": // 65 byte len
++                return {
++                    privkey: privkey,
++                    pubkey: pubkey
++                };
++            default:
++                return {
++                    privkey: privkey,
++                    pubkey: crypto_1.Secp256k1.compressPubkey(pubkey) // 33 byte len,
++                };
++        }
+     }
+     async getAccountsWithPrivkeys() {
+         return Promise.all(this.accounts.map(async ({ hdPath, prefix }) => {
+             const { privkey, pubkey } = await this.getKeyPair(hdPath);
+-            const address = (0, encoding_1.toBech32)(prefix, (0, amino_1.rawSecp256k1PubkeyToRawAddress)(pubkey));
+-            return {
+-                algo: "secp256k1",
+-                privkey: privkey,
+-                pubkey: pubkey,
+-                address: address,
+-            };
++            const coinType = (0, crypto_1.pathToString)(hdPath).split('/')[2];
++            switch (coinType) {
++                case "60'":
++                    const hash = new crypto_1.Keccak256(pubkey.slice(1)).digest();
++                    const lastTwentyBytes = (0, encoding_1.toHex)(hash.slice(-20));
++                    // EVM address
++                    const address = DirectSecp256k1HdWallet.toChecksummedAddress('0x' + lastTwentyBytes);
++                    return {
++                        algo: "ethsecp256k1",
++                        privkey: privkey,
++                        pubkey: crypto_1.Secp256k1.compressPubkey(pubkey),
++                        address: await DirectSecp256k1HdWallet.getBech32AddressFromEVMAddress(address, prefix)
++                    };
++                default:
++                    return {
++                        algo: "secp256k1",
++                        privkey: privkey,
++                        pubkey: pubkey,
++                        address: (0, encoding_1.toBech32)(prefix, (0, amino_1.rawSecp256k1PubkeyToRawAddress)(pubkey)),
++                    };
++            }
+         }));
+     }
++    static async getBech32AddressFromEVMAddress(evmAddress, bech32Prefix) {
++        if (!DirectSecp256k1HdWallet.isAddress(evmAddress.toLowerCase())) {
++            throw new TypeError('Please provide a valid EVM compatible address.');
++        }
++        var evmAddrWithoutHexPrefix = evmAddress.replace(/^(-)?0x/i, '$1');
++        var evmAddressBytes = (0, encoding_1.fromHex)(evmAddrWithoutHexPrefix);
++        var evmToBech32Address = encoding_1.toBech32(bech32Prefix, evmAddressBytes);
++        return evmToBech32Address;
++    }
++    static isValidAddress(address) {
++        if (!address.match(/^0x[a-fA-F0-9]{40}$/)) {
++            return false;
++        }
++        return true;
++    }
++    static toChecksummedAddress(address) {
++        // 40 low hex characters
++        let addressLower;
++        if (typeof address === "string") {
++            if (!DirectSecp256k1HdWallet.isValidAddress(address)) {
++                throw new Error("Input is not a valid Ethereum address");
++            }
++            addressLower = address.toLowerCase().replace("0x", "");
++        }
++        else {
++            addressLower = (0, encoding_1.toHex)(address);
++        }
++        const addressHash = (0, encoding_1.toHex)(new crypto_1.Keccak256((0, encoding_1.toAscii)(addressLower)).digest());
++        let checksumAddress = "0x";
++        for (let i = 0; i < 40; i++) {
++            checksumAddress += parseInt(addressHash[i], 16) > 7 ? addressLower[i].toUpperCase() : addressLower[i];
++        }
++        return checksumAddress;
++    }
++    static isAddress(address) {
++        // check if it has the basic requirements of an address
++        if (!/^(0x)?[0-9a-f]{40}$/i.test(address)) {
++            return false;
++            // If it's ALL lowercase or ALL upppercase
++        }
++        else if (/^(0x|0X)?[0-9a-f]{40}$/.test(address) || /^(0x|0X)?[0-9A-F]{40}$/.test(address)) {
++            return true;
++            // Otherwise check each case
++        }
++        return false;
++    }
+ }
+ exports.DirectSecp256k1HdWallet = DirectSecp256k1HdWallet;
+ //# sourceMappingURL=directsecp256k1hdwallet.js.map
+\ No newline at end of file
+diff --git a/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/pubkey.js b/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/pubkey.js
+index c8829b2..46722ae 100644
+--- a/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/pubkey.js
++++ b/node_modules/@cosmjs/stargate/node_modules/@cosmjs/proto-signing/build/pubkey.js
+@@ -44,6 +44,15 @@ function encodePubkey(pubkey) {
+             value: Uint8Array.from(keys_2.LegacyAminoPubKey.encode(pubkeyProto).finish()),
+         });
+     }
++    else if ((0, amino_1.isEthsecp256k1Pubkey)(pubkey)) {
++        const pubkeyProto = keys_3.PubKey.fromPartial({
++            key: (0, encoding_1.fromBase64)(pubkey.value),
++        });
++        return any_1.Any.fromPartial({
++            typeUrl: "/ethermint.crypto.v1.ethsecp256k1.PubKey",
++            value: Uint8Array.from(keys_3.PubKey.encode(pubkeyProto).finish()),
++        });
++    }
+     else {
+         throw new Error(`Pubkey type ${pubkey.type} not recognized`);
+     }
+@@ -65,6 +74,10 @@ function anyToSinglePubkey(pubkey) {
+             const { key } = keys_1.PubKey.decode(pubkey.value);
+             return (0, amino_1.encodeEd25519Pubkey)(key);
+         }
++        case "/ethermint.crypto.v1.ethsecp256k1.PubKey": {
++            const { key } = keys_3.PubKey.decode(pubkey.value);
++            return (0, amino_1.encodeSecp256k1Pubkey)(key, 'ethsecp256k1');
++        }
+         default:
+             throw new Error(`Pubkey type_url ${pubkey.typeUrl} not recognized as single public key type`);
+     }
+@@ -77,6 +90,7 @@ exports.anyToSinglePubkey = anyToSinglePubkey;
+  */
+ function decodePubkey(pubkey) {
+     switch (pubkey.typeUrl) {
++        case "/ethermint.crypto.v1.ethsecp256k1.PubKey":
+         case "/cosmos.crypto.secp256k1.PubKey":
+         case "/cosmos.crypto.ed25519.PubKey": {
+             return anyToSinglePubkey(pubkey);

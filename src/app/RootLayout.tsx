@@ -40,7 +40,6 @@ const ClientWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <div className={rubik.className}>
       <AccountContext.Provider value={{ account, setAccount }}>
-        {/* Display the ConnectButton only when not on the '/tokenstake' page */}
         {!isTokenStakePage && (
           <div className="fixed right-4 z-50">
             <ConnectButton account={account} setAccount={setAccount} />

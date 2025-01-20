@@ -37,7 +37,7 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ txHash, show, onClo
           <div>
             <p>Transaction Hash:</p>
             <a
-              href={`https://explorer.testnet.osmosis.zone/txs/${txHash}`}
+              href={`https://testnet.crossfi.explorers.guru/transaction/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
             >

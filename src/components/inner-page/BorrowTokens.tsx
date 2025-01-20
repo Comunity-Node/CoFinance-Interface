@@ -11,6 +11,7 @@ import { getCollateral, getTokenAddresses, borrowTokens } from '../../utils/CoFi
 import { getTokenBalance } from '../../utils/TokenUtils';
 import { getPoolByPairs } from '../../utils/Factory';
 import '@sweetalert2/theme-dark/dark.css';
+import { FaMoneyCheck } from 'react-icons/fa';
 
 const MySwal = withReactContent(Swal);
 
@@ -20,6 +21,9 @@ const SECONDS_IN_90_DAYS = 90 * 24 * 60 * 60;
 interface CollateralProps {
     tokenOptions?: ImageSelect[];
     handleBorrowAmounts: (amount: number) => Promise<{ amount: number }>;
+    durationOptions?: SelectList[];
+    account: string;
+    provider: ethers.BrowserProvider;
 }
 
 const BorrowTokens: React.FC<CollateralProps> = ({
@@ -77,7 +81,7 @@ const BorrowTokens: React.FC<CollateralProps> = ({
         const poolAddress = await getPoolByPairs(providerRef.current, selectedBorrowToken.value, selectedCollateralToken.value);
         setSelectedPool(poolAddress || null);
 
-        if (poolAddress) {
+        if (poolAddress && account) {
             try {
                 const addresses = await getTokenAddresses(providerRef.current, poolAddress);
                 console.log("Addresses : " + JSON.stringify(addresses));
@@ -173,12 +177,14 @@ const BorrowTokens: React.FC<CollateralProps> = ({
                 },
                 confirmButtonText: 'Close',
             });
-            fetchBorrowTokenBalance(account);
-        } catch (error) {
+            if (account) {
+                fetchBorrowTokenBalance(account);
+            }
+        } catch (error: unknown) {
             console.error('Error during borrowing:', error);
             await MySwal.fire({
                 title: 'Error!',
-                text: 'There was a problem with the borrow: ' + (error.message || error),
+                text: 'There was a problem with the borrow: ' + (error instanceof Error ? error.message : String(error)),
                 icon: 'error',
                 customClass: {
                     popup: 'my-custom-popup',
@@ -194,6 +200,16 @@ const BorrowTokens: React.FC<CollateralProps> = ({
 
     return (
         <div className='space-y-4 py-4 h-full'>
+            {selectedPool && userCollateralBalances && selectedCollateralToken && (
+                <div role="alert" className="alert shadow-lg">
+                    <FaMoneyCheck />
+                    <div>
+                        <h3 className="font-bold">Available Colateral</h3>
+                        <div className="text-xs">{selectedCollateralToken?.label}</div>
+                    </div>
+                    <button className="btn btn-sm">{selectedCollateralToken ? userCollateralBalances?.[selectedCollateralToken.label] || 0 : 0}</button>
+                </div>
+            )} 
             <div className="flex items-center justify-between w-full space-x-2 bg-transparent rounded-2xl rounded-tr-2xl px-4 py-2">
                 <CustomSelectSearch
                     placeholder='Choose Tokens to Borrow'
@@ -223,17 +239,6 @@ const BorrowTokens: React.FC<CollateralProps> = ({
                     handleValue={selectedCollateralToken}
                     className="border-none hover:border-0 w-full px-0 py-2"
                 />
-            </div>
-            {selectedPool && userCollateralBalances && selectedCollateralToken && (
-                <div className="p-4 rounded-lg shadow-md">
-                    <div className="flex justify-between">
-                        <div>
-                            <strong>Available collateral {selectedCollateralToken.label}:</strong> {userCollateralBalances[selectedCollateralToken.label]}
-                        </div>
-                    </div>
-                </div>
-            )}
-            <div className="w-full p-2">
                 <CustomSelectSearch
                     placeholder='Choose Durations'
                     tokenOptions={durationList}
@@ -244,11 +249,16 @@ const BorrowTokens: React.FC<CollateralProps> = ({
             </div>
             <div className="w-full text-end rounded-lg p-1 bg-[#bdc3c7]">
                 <button
-                    className="btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full"
+                    className={`btn border-0 font-thin text-lg bg-transparent hover:bg-transparent text-gray-950 w-full ${loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     onClick={onBorrowTokens}
-                    disabled={isBorrowing}
                 >
-                    {isBorrowing ? 'Borrowing...' : 'Borrow'} <MdOutlineArrowOutward />
+                    {loading ? (
+                        <div className="flex items-center justify-center w-full">
+                            <span className="loading loading-bars loading-sm"></span>
+                        </div>
+                    ) : (
+                        <>Borrow <MdOutlineArrowOutward /></>
+                    )}
                 </button>
             </div>
         </div>

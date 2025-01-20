@@ -60,7 +60,7 @@ const customStyles = {
 const CustomOption = (props: OptionProps<TokenOption>) => (
   <components.Option {...props}>
     <div className="flex items-center">
-      <Image src={props.data.image} alt={props.data.label} width={24} height={24} className="mr-2" className="rounded-full" />
+      <Image src={props.data.image} alt={props.data.label} width={24} height={24} className="mr-2 rounded-full" />
       {props.data.label}
     </div>
   </components.Option>
@@ -69,7 +69,7 @@ const CustomOption = (props: OptionProps<TokenOption>) => (
 const CustomSingleValue = (props: SingleValueProps<TokenOption>) => (
   <components.SingleValue {...props}>
     <div className="flex items-center">
-      <Image src={props.data.image} alt={props.data.label} width={24} height={24} className="mr-2" className="rounded-full" />
+      <Image src={props.data.image} alt={props.data.label} width={24} height={24} className="mr-2 rounded-full" />
       {props.data.label}
     </div>
   </components.SingleValue>

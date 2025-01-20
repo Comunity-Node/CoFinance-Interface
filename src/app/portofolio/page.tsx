@@ -4,6 +4,43 @@ import React, { useState } from 'react';
 import { FaArrowsAltH } from 'react-icons/fa';
 import { MdOutlineArrowOutward } from 'react-icons/md';
 
+interface Pool {
+  id: string;
+  tokenA: string;
+  tokenB: string;
+  liquidity: number;
+  imageA: string;
+  imageB: string;
+}
+
+interface TokenHolder {
+  id: string;
+  name: string;
+  tokens: number;
+  image: string;
+}
+
+interface StakingToken {
+  id: number;
+  tokenName: string;
+  amount: number;
+  image: string;
+}
+
+interface StakingLPToken {
+  id: number;
+  tokenName: string;
+  amount: number;
+  image?: string;  // Optional since we have fallback
+}
+
+interface Loan {
+  id: number;
+  loanAmount: number;
+  collateral: number;
+  collateralType: string;
+}
+
 // Calculate total liquidity
 const totalLiquidityData = [
   {
@@ -56,7 +93,7 @@ const overviewList = [
 ];
 
 // PoolContent Component
-const PoolContent = ({ pools }) => (
+const PoolContent = ({ pools }: { pools: Pool[] }) => (
   <div className="bg-[#141414] p-6 rounded-lg min-w-full">
     {pools.length === 0 ? (
       <p className="text-white text-center">No pools available</p>
@@ -90,7 +127,7 @@ const PoolContent = ({ pools }) => (
 );
 
 // TokenHolders Component
-const TokenHolders = ({ tokenHolders }) => (
+const TokenHolders = ({ tokenHolders }: { tokenHolders: TokenHolder[] }) => (
   <div className="bg-[#141414] p-6 rounded-lg min-w-full">
     {tokenHolders.length === 0 ? (
       <p className="text-white text-center">No token holders available</p>
@@ -121,7 +158,7 @@ const TokenHolders = ({ tokenHolders }) => (
 );
 
 // StakingTokens Component
-function StakingTokens({ stakingTokens }) {
+function StakingTokens({ stakingTokens }: { stakingTokens: StakingToken[] }) {
 
   return (
     <div className="bg-[#141414] p-6 rounded-lg min-w-full ">
@@ -154,7 +191,7 @@ function StakingTokens({ stakingTokens }) {
   );
 }
 
-function StakingLPTokens({ stakingLPTokens }) {
+function StakingLPTokens({ stakingLPTokens }: { stakingLPTokens: StakingLPToken[] }) {
   const [imageError, setImageError] = useState(true);
 
   const getInitials = (name: string) => {
@@ -213,7 +250,7 @@ function StakingLPTokens({ stakingLPTokens }) {
   );
 }
 
-const Loans = ({ loans }) => (
+const Loans = ({ loans }: { loans: Loan[] }) => (
   <div className="bg-[#141414] p-6 rounded-lg min-w-full">
     {loans.length === 0 ? (
       <p className="text-white text-center">No loans available</p>
@@ -301,7 +338,7 @@ function Portofolio() {
 
   return (
     <section className="min-h-screen animation-bounce bg-portfolio bg-no-repeat bg-contain image-full">
-      <div className="pt-40 px-40">
+      <div className="pt-40 px-40 pb-20">
         <div className="flex items-center justify-between">
           <div className="text-end py-5 space-y-3">
             <p className="text-4xl font-bold text-white sm:text-4xl">Overview</p>

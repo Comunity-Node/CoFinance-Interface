@@ -1,0 +1,77 @@
+diff --git a/node_modules/@cosmjs/stargate/build/accounts.js b/node_modules/@cosmjs/stargate/build/accounts.js
+index 1739c71..f85050f 100644
+--- a/node_modules/@cosmjs/stargate/build/accounts.js
++++ b/node_modules/@cosmjs/stargate/build/accounts.js
+@@ -56,6 +56,11 @@ function accountFromAny(input) {
+             (0, utils_1.assert)(baseAccount);
+             return accountFromBaseAccount(baseAccount);
+         }
++        case "/ethermint.types.v1.EthAccount": {
++            const baseAccount = auth_1.ModuleAccount.decode(value).baseAccount;
++            (0, utils_1.assert)(baseAccount);
++            return accountFromBaseAccount(baseAccount);
++        }
+         default:
+             throw new Error(`Unsupported type: '${typeUrl}'`);
+     }
+diff --git a/node_modules/@cosmjs/stargate/build/signingstargateclient.js b/node_modules/@cosmjs/stargate/build/signingstargateclient.js
+index e3af868..e18e7dc 100644
+--- a/node_modules/@cosmjs/stargate/build/signingstargateclient.js
++++ b/node_modules/@cosmjs/stargate/build/signingstargateclient.js
+@@ -104,7 +104,7 @@ class SigningStargateClient extends stargateclient_1.StargateClient {
+         if (!accountFromSigner) {
+             throw new Error("Failed to retrieve account from signer");
+         }
+-        const pubkey = (0, amino_1.encodeSecp256k1Pubkey)(accountFromSigner.pubkey);
++        const pubkey = (0, amino_1.encodeSecp256k1Pubkey)(accountFromSigner.pubkey, accountFromSigner.algo);
+         const { sequence } = await this.getSequence(signerAddress);
+         const { gasInfo } = await this.forceGetQueryClient().tx.simulate(anyMsgs, memo, pubkey, sequence);
+         (0, utils_1.assertDefined)(gasInfo);
+@@ -243,7 +243,7 @@ class SigningStargateClient extends stargateclient_1.StargateClient {
+         if (!accountFromSigner) {
+             throw new Error("Failed to retrieve account from signer");
+         }
+-        const pubkey = (0, proto_signing_1.encodePubkey)((0, amino_1.encodeSecp256k1Pubkey)(accountFromSigner.pubkey));
++        const pubkey = (0, proto_signing_1.encodePubkey)((0, amino_1.encodeSecp256k1Pubkey)(accountFromSigner.pubkey, accountFromSigner.algo));
+         const signMode = signing_1.SignMode.SIGN_MODE_LEGACY_AMINO_JSON;
+         const msgs = messages.map((msg) => this.aminoTypes.toAmino(msg));
+         const signDoc = (0, amino_1.makeSignDoc)(msgs, fee, chainId, memo, accountNumber, sequence);
+@@ -272,7 +272,7 @@ class SigningStargateClient extends stargateclient_1.StargateClient {
+         if (!accountFromSigner) {
+             throw new Error("Failed to retrieve account from signer");
+         }
+-        const pubkey = (0, proto_signing_1.encodePubkey)((0, amino_1.encodeSecp256k1Pubkey)(accountFromSigner.pubkey));
++        const pubkey = (0, proto_signing_1.encodePubkey)((0, amino_1.encodeSecp256k1Pubkey)(accountFromSigner.pubkey, accountFromSigner.algo));
+         const txBodyEncodeObject = {
+             typeUrl: "/cosmos.tx.v1beta1.TxBody",
+             value: {
+@@ -284,7 +284,7 @@ class SigningStargateClient extends stargateclient_1.StargateClient {
+         const gasLimit = math_1.Int53.fromString(fee.gas).toNumber();
+         const authInfoBytes = (0, proto_signing_1.makeAuthInfoBytes)([{ pubkey, sequence }], fee.amount, gasLimit, fee.granter, fee.payer);
+         const signDoc = (0, proto_signing_1.makeSignDoc)(txBodyBytes, authInfoBytes, chainId, accountNumber);
+-        const { signature, signed } = await this.signer.signDirect(signerAddress, signDoc);
++        const { signature, signed } = await this.signer.signDirect(signerAddress, signDoc, pubkey.typeUrl);
+         return tx_3.TxRaw.fromPartial({
+             bodyBytes: signed.bodyBytes,
+             authInfoBytes: signed.authInfoBytes,
+diff --git a/node_modules/@cosmjs/stargate/build/stargateclient.js b/node_modules/@cosmjs/stargate/build/stargateclient.js
+index 3268b13..0653129 100644
+--- a/node_modules/@cosmjs/stargate/build/stargateclient.js
++++ b/node_modules/@cosmjs/stargate/build/stargateclient.js
+@@ -12,6 +12,7 @@ const accounts_1 = require("./accounts");
+ const events_1 = require("./events");
+ const modules_1 = require("./modules");
+ const queryclient_1 = require("./queryclient");
++const queries = require("./modules/tx/queries");
+ class TimeoutError extends Error {
+     constructor(message, txId) {
+         super(message);
+@@ -91,7 +92,7 @@ class StargateClient {
+     constructor(tmClient, options) {
+         if (tmClient) {
+             this.tmClient = tmClient;
+-            this.queryClient = queryclient_1.QueryClient.withExtensions(tmClient, modules_1.setupAuthExtension, modules_1.setupBankExtension, modules_1.setupStakingExtension, modules_1.setupTxExtension);
++            this.queryClient = queryclient_1.QueryClient.withExtensions(tmClient, modules_1.setupAuthExtension, modules_1.setupBankExtension, modules_1.setupStakingExtension, queries.setupTxExtension);
+         }
+         const { accountParser = accounts_1.accountFromAny } = options;
+         this.accountParser = accountParser;

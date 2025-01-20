@@ -7,8 +7,11 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Co Finance",
+  title: "CoFinance",
   description: "The next gen DeFi Earning Platform",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 const ServerLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {

@@ -59,13 +59,15 @@ const CardAccountDetails: React.FC<CardAccountDetailsProps> = ({ account, balanc
                     <div className="flex w-full bg-base-300 rounded-lg py-5">
                         <div className="card bg-transparent grid h-full flex-grow place-items-center space-y-2">
                             <p className="text-sm font-normal text-gray-400 w-full limit-text text-center text-wrap">Staked Amount</p>
-                            <p className="text-2xl font-semibold text-gray-400 w-full limit-text">{stakedAmount || 0}</p>
+                            <p className="text-2xl font-semibold text-gray-400 w-full limit-text">{stakedAmount || 0}
+                            <div className='font-thin text-gray-500 text-sm'>MPX</div>
+                            </p>
                         </div>
                         <div className="divider divider-horizontal"></div>
                         <div className="card bg-transparent grid h-full flex-grow place-items-center space-y-2">
                             <p className="text-sm font-normal text-gray-400 w-full limit-text text-center text-wrap">Reward Staking</p>
                             <p className="text-2xl font-semibold text-gray-400 w-full limit-text">{reward || 0}
-                                <div className='font-thin text-gray-500 text-sm'>OSMO</div>
+                                <div className='font-thin text-gray-500 text-sm'>XFI</div>
                             </p>
                         </div>
                     </div>

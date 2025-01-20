@@ -4,9 +4,11 @@ import CreatableSelect from 'react-select/creatable';
 import tokens from '../../data/token.json';
 import { Button } from '../../components/ui/moving-border';
 import { getTokenInfo } from '../../utils/TokenUtils';
-import { createPool } from '../../utils/Factory'; 
+import { createPool } from '../../utils/Factory';
 import { ethers } from 'ethers';
 import { components } from 'react-select';
+import { FaChevronLeft } from 'react-icons/fa';
+import Link from 'next/link';
 
 const promptMetaMaskSign = async (message: string): Promise<string> => {
   if (!window.ethereum) {
@@ -19,28 +21,28 @@ const promptMetaMaskSign = async (message: string): Promise<string> => {
 };
 
 const customStyles = {
-  control: (base) => ({
+  control: (base: any) => ({
     ...base,
     background: 'rgba(0, 0, 0, 0.7)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
     color: 'white',
   }),
-  menu: (base) => ({
+  menu: (base: any) => ({
     ...base,
     background: 'rgba(0, 0, 0, 0.7)',
   }),
-  option: (base, { isFocused }) => ({
+  option: (base: any, { isFocused }: any) => ({
     ...base,
     background: isFocused ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
     color: 'white',
   }),
-  singleValue: (base) => ({
+  singleValue: (base: any) => ({
     ...base,
     color: 'white',
   }),
 };
 
-const CustomOption = (props) => (
+const CustomOption = (props: any) => (
   <components.Option {...props}>
     <div className="flex items-center">
       <img src={props.data.image} alt={props.data.label} className="w-6 h-6 mr-2 rounded-full" />
@@ -62,11 +64,12 @@ function AddPool() {
     image: token.image,
   })));
 
-  const handleAddCustomOption = async (inputValue, setSelectedOption) => {
+  const handleAddCustomOption = async (inputValue: string, setSelectedOption: any) => {
     if (ethers.isAddress(inputValue)) {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const tokenInfo = await getTokenInfo(provider, inputValue);
       if (tokenInfo) {
+        console.log("Token Info : " + tokenInfo);
         setTokenOptions((prevOptions) => [...prevOptions, tokenInfo]);
         setSelectedOption(tokenInfo);
       } else {
@@ -105,57 +108,97 @@ function AddPool() {
   };
 
   return (
-    <section className="min-h-screen bg-borrow bg-no-repeat bg-contain text-center">
+    <section className="min-h-screen bg-choose-us bg-no-repeat bg-contain text-center">
       <div className="pt-40 px-96 space-y-5">
-        <h1 className="text-4xl font-bold text-white mb-8">Create New Pools</h1>
+        <div className="flex items-center justify-between">
+          <Link href={'/pools'}>
+            <div className='flex items-center justify-start'>
+              <FaChevronLeft width={96} className='mr-2' />
+              <p className='font-semibold text-2xl'>Back</p>
+            </div>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-semibold text-white">Create New Pools</h1>
+          </div>
+
+        </div>
         <div className="bg-[#141414] rounded-xl p-6 space-y-4">
-          <input
-            type="text"
-            value={poolName}
-            onChange={(e) => setPoolName(e.target.value)}
-            placeholder="Pool Name"
-            className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
-          />
-          <CreatableSelect
-            isClearable
-            options={tokenOptions}
-            value={tokenA}
-            onChange={setTokenA}
-            onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setTokenA)}
-            styles={customStyles}
-            components={{ Option: CustomOption }}
-            placeholder="Select or Enter Token A"
-            className="w-full"
-          />
-          <CreatableSelect
-            isClearable
-            options={tokenOptions}
-            value={tokenB}
-            onChange={setTokenB}
-            onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setTokenB)}
-            styles={customStyles}
-            components={{ Option: CustomOption }}
-            placeholder="Select or Enter Token B"
-            className="w-full"
-          />
-          <input
-            type="text"
-            value={priceFeed}
-            onChange={(e) => setPriceFeed(e.target.value)}
-            placeholder="Price Feed Address"
-            className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
-          />
-          <CreatableSelect
-            isClearable
-            options={tokenOptions}
-            value={rewardToken}
-            onChange={setRewardToken}
-            onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setRewardToken)}
-            styles={customStyles}
-            components={{ Option: CustomOption }}
-            placeholder="Select or Enter Reward Token"
-            className="w-full"
-          />
+          <label className="form-control w-full max-w-auto">
+            <div className="label">
+              <span className="label-text">Pool Name</span>
+            </div>
+            <input
+              type="text"
+              value={poolName}
+              onChange={(e) => setPoolName(e.target.value)}
+              placeholder="Enter Pool Name"
+              className="w-full p-2 bg-transparent border placeholder:text-gray-500 border-gray-600 rounded text-white"
+            />
+          </label>
+          <div className="flex items-center justify-between space-x-3">
+            <label className="form-control w-full max-w-auto">
+              <div className="label">
+                <span className="label-text">Token A</span>
+              </div>
+              <CreatableSelect
+                isClearable
+                options={tokenOptions}
+                value={tokenA}
+                onChange={setTokenA}
+                onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setTokenA)}
+                styles={customStyles}
+                components={{ Option: CustomOption }}
+                placeholder="Select or Enter Token A"
+                className="w-full"
+              />
+            </label>
+            <label className="form-control w-full max-w-auto">
+              <div className="label">
+                <span className="label-text">Token B</span>
+              </div>
+              <CreatableSelect
+                isClearable
+                options={tokenOptions}
+                value={tokenB}
+                onChange={setTokenB}
+                onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setTokenB)}
+                styles={customStyles}
+                components={{ Option: CustomOption }}
+                placeholder="Select or Enter Token B"
+                className="w-full"
+              />
+            </label>
+          </div>
+          <div className="flex items-center justify-between space-x-3">
+            <label className="form-control w-full max-w-auto">
+              <div className="label">
+                <span className="label-text">Price Feed</span>
+              </div>
+              <input
+                type="text"
+                value={priceFeed}
+                onChange={(e) => setPriceFeed(e.target.value)}
+                placeholder="Price Feed Address"
+                className="w-full p-2 bg-transparent border border-gray-600 rounded text-white"
+              />
+            </label>
+            <label className="form-control w-full max-w-auto">
+              <div className="label">
+                <span className="label-text">Rewards Token</span>
+              </div>
+              <CreatableSelect
+                isClearable
+                options={tokenOptions}
+                value={rewardToken}
+                onChange={setRewardToken}
+                onCreateOption={(inputValue) => handleAddCustomOption(inputValue, setRewardToken)}
+                styles={customStyles}
+                components={{ Option: CustomOption }}
+                placeholder="Select or Enter Reward Token"
+                className="w-full"
+              />
+            </label>
+          </div>
           <div className="flex items-center mb-4">
             <input
               type="checkbox"
@@ -166,12 +209,12 @@ function AddPool() {
             <span className="text-white">Incentivized Pool</span>
           </div>
           <div className="text-center">
-            <Button
+            <button
               onClick={handleAddPool}
-              className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 transition duration-300 text-white py-2 px-4 rounded-lg"
+              className="bg-gray-500 transition duration-300 p-4 w-full text-lg font-normal text-gray-950 rounded-lg"
             >
               Add Pool
-            </Button>
+            </button>
           </div>
         </div>
       </div>

@@ -279,12 +279,14 @@ const ERC_20ABI = [
 ]
 
 interface TokenInfo {
+  name: string;
+  address: string;
   value: string;
   label: string;
   image: string;
 }
 
-export const getTokenInfo = async (provider: ethers.ethers.BrowserProvider, address: string): Promise<TokenInfo> => {
+export const getTokenInfo = async (provider: ethers.BrowserProvider, address: string): Promise<TokenInfo> => {
   try {
     const tokenContract = new ethers.Contract(address, [
       "function name() view returns (string)",
@@ -304,7 +306,7 @@ export const getTokenInfo = async (provider: ethers.ethers.BrowserProvider, addr
     return {
       value: address,
       label: `${tokenName} (${tokenSymbol})`,
-      image: tokenSymbol !== 'N/A' ? tokenImage : '/tokens/CoFi.png'
+      image: tokenSymbol !== 'N/A' ? tokenImage : '/tokens/Missing-Token.png'
     };
   } catch (error) {
     console.error('Error fetching token info:', error);
@@ -312,12 +314,12 @@ export const getTokenInfo = async (provider: ethers.ethers.BrowserProvider, addr
     return {
       value: address,
       label: 'N/A',
-      image: '/tokens/CoFi.png' 
+      image: '/tokens/Missing-Token.png' 
     };
   }
 };
 
-export const getTokenBalance = async (provider: ethers.ethers.BrowserProvider, tokenAddress: string, account: string): Promise<string> => {
+export const getTokenBalance = async (provider: ethers.BrowserProvider, tokenAddress: string, account: string): Promise<string> => {
   const tokenContract = new ethers.Contract(tokenAddress, [
     "function balanceOf(address) view returns (uint256)"
   ], provider);
@@ -343,4 +345,3 @@ export const approveToken = async (
     throw error; 
   }
 };
-

@@ -74,6 +74,7 @@ const Swap: React.FC = () => {
     if (poolAddress && fromToken && toToken && amount > 0 && provider) {
       try {
         const { outputAmount, feeAmount } = await previewSwap(provider, poolAddress, fromToken.value, amount.toString());
+        console.log(outputAmount, feeAmount);
         setToAmount(parseFloat(outputAmount));
         setFeeAmount(parseFloat(feeAmount));
       } catch (error) {

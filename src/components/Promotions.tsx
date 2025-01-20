@@ -36,7 +36,7 @@ function PromotionBanner() {
         },
     ];
     return (
-        <section className="p-10">
+        <section className="p-10 hidden lg:block">
             <div className="flex items-center justify-center space-x-10">
                 <div className="relative max-w-2xl text-start" data-aos="fade-right">
                     <p className="text-4xl font-bold leading-relaxed">

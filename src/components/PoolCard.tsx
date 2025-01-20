@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from './ui/moving-border';
-import AddLiquidityModal from './inner-page/AddLiquidityModal'; 
-import WithdrawLiquidityModal from './inner-page/WithdrawLiquidityModal'; 
-
-const DEFAULT_IMAGE_URL = '/tokens/CoFi.png';
+import AddLiquidityModal from './inner-page/AddLiquidityModal';
+import WithdrawLiquidityModal from './inner-page/WithdrawLiquidityModal';
 
 interface PoolCardProps {
   pool: {
@@ -28,6 +26,12 @@ const PoolCard: React.FC<PoolCardProps> = ({ pool }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [isWithdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  
+  const DEFAULT_IMAGE_URL = '/img-default.png';
+
+  useEffect(() => {
+    console.log("DEFAULT_IMAGE_URL" + DEFAULT_IMAGE_URL);
+  }, []);
 
   const handleButtonClick = () => {
     setMenuOpen(!menuOpen);
@@ -35,12 +39,12 @@ const PoolCard: React.FC<PoolCardProps> = ({ pool }) => {
 
   const handleAddPool = () => {
     setAddModalOpen(true);
-    setMenuOpen(false); 
+    setMenuOpen(false);
   };
 
   const handleWithdrawPool = () => {
     setWithdrawModalOpen(true);
-    setMenuOpen(false); 
+    setMenuOpen(false);
   };
 
   return (
@@ -99,17 +103,17 @@ const PoolCard: React.FC<PoolCardProps> = ({ pool }) => {
           </div>
         )}
       </div>
-      <AddLiquidityModal 
-        open={isAddModalOpen} 
-        onClose={() => setAddModalOpen(false)} 
-        tokenA={pool.tokenA} 
-        tokenB={pool.tokenB} 
+      <AddLiquidityModal
+        open={isAddModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        tokenA={pool.tokenA}
+        tokenB={pool.tokenB}
       />
-      <WithdrawLiquidityModal 
-        open={isWithdrawModalOpen} 
-        onClose={() => setWithdrawModalOpen(false)} 
-        tokenA={pool.tokenA} 
-        tokenB={pool.tokenB} 
+      <WithdrawLiquidityModal
+        open={isWithdrawModalOpen}
+        onClose={() => setWithdrawModalOpen(false)}
+        tokenA={pool.tokenA}
+        tokenB={pool.tokenB}
       />
     </div>
   );
