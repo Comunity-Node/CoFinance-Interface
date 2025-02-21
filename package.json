@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postinstall": "patch-package",
+    "postinstall": "ts-node patches.ts",
     "start": "next start",
     "lint": "next lint"
   },
