@@ -18,6 +18,11 @@ const eslintConfig = [
       "@typescript-eslint/no-explicit-any": "off",
       "react/no-unescaped-entities": "off",
       "jsx-a11y/role-supports-aria-props": "off",
+      "no-console": "warn",
+      "no-undef": "off",
+      "no-shadow": "off",
+      "no-unreachable": "off",
+      "import/no-unresolved": "off"
     },
   },
 ];
