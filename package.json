@@ -2,10 +2,11 @@
   "name": "Cofinance",
   "version": "0.1.0",
   "private": true,
+  "type": "module", 
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postinstall": "ts-node patches.ts",
+    "postinstall": "ts-node patches.mjs",
     "start": "next start",
     "lint": "next lint"
   },
