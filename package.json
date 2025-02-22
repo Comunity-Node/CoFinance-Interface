@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postinstall": "ts-node patches.mjs",
+    "postinstall": "node --loader ts-node/esm patches.ts",
     "start": "next start",
     "lint": "next lint"
   },
