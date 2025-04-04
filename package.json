@@ -2,6 +2,7 @@
   "name": "Cofinance",
   "version": "0.1.0",
   "private": true,
+  "type": "module", 
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -61,6 +62,7 @@
     "patch-package": "^8.0.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
-    "typescript": "^5"
+    "typescript": "^5",
+    "ts-node": "^10.9.1"
   }
 }
